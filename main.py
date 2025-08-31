@@ -23,88 +23,724 @@ import re
 import warnings
 warnings.filterwarnings('ignore')
 
-# Configure the Streamlit page
+# Configure the Streamlit page with enhanced settings
 st.set_page_config(
-    page_title="Advanced Data Analytics Platform",
-    page_icon="🚀",
+    page_title="📊 Datalix",
+    page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get Help': 'https://github.com/HimanshuSingh-966/Datalix',
+        'Report a bug': "https://github.com/HimanshuSingh-966/Datalix",
+        'About': "# Datalix\n\nAI-Powered Data Cleaning, Analysis & Visualization"
+    }
 )
 
-# Enhanced Custom CSS
+# Enhanced Modern CSS with Advanced Design
 st.markdown("""
 <style>
+    /* Import Google Fonts for modern typography */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    /* Global Styles */
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    /* Enhanced Main Header with Gradient and Animation */
     .main-header {
         font-size: 3.5rem;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        background-clip: text;
         text-align: center;
         margin-bottom: 2rem;
-        font-weight: bold;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        animation: gradientShift 3s ease-in-out infinite;
+        text-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
+    
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+    
+    /* Enhanced Section Headers */
     .section-header {
-        font-size: 1.8rem;
-        color: #4f46e5;
+        font-size: 2rem;
+        background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         margin-top: 2rem;
-        margin-bottom: 1rem;
-        border-bottom: 2px solid #e0e7ff;
-        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        border-bottom: 3px solid;
+        border-image: linear-gradient(90deg, #4f46e5, #7c3aed) 1;
+        padding-bottom: 0.75rem;
+        position: relative;
     }
+    
+    .section-header::after {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        left: 0;
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(90deg, #f093fb, #f5576c);
+        animation: slideRight 2s ease-in-out infinite;
+    }
+    
+    @keyframes slideRight {
+        0% { transform: translateX(0); }
+        50% { transform: translateX(100px); }
+        100% { transform: translateX(0); }
+    }
+    
+    /* Enhanced Feature Cards with Glassmorphism */
     .feature-card {
-        background: linear-gradient(135deg, #f8faff 0%, #e0e7ff 100%);
-        padding: 1.5rem;
-        border-radius: 1rem;
-        border: 1px solid #c7d2fe;
-        margin: 1rem 0;
-        box-shadow: 0 4px 6px rgba(79, 70, 229, 0.1);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 8px 32px rgba(79, 70, 229, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
     }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transition: left 0.5s;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(79, 70, 229, 0.15);
+    }
+    
+    .feature-card:hover::before {
+        left: 100%;
+    }
+    
+    /* Enhanced AI Suggestion Cards */
     .ai-suggestion {
-        background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%);
-        padding: 1rem;
-        border-radius: 0.75rem;
-        border-left: 4px solid #f59e0b;
-        margin: 1rem 0;
+        background: linear-gradient(135deg, rgba(254, 243, 199, 0.9) 0%, rgba(251, 191, 36, 0.9) 100%);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem;
+        border-radius: 16px;
+        border-left: 6px solid #f59e0b;
+        margin: 1.5rem 0;
+        box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     }
+    
+    .ai-suggestion::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+        animation: shimmer 2s linear infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+    
+    .ai-suggestion:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.25);
+    }
+    
+    /* Enhanced Quality Score with 3D Effect */
     .quality-score {
         font-size: 2.5rem;
-        font-weight: bold;
+        font-weight: 700;
         text-align: center;
-        padding: 1rem;
+        padding: 1.5rem;
         border-radius: 50%;
         margin: 0 auto;
-        width: 100px;
-        height: 100px;
+        width: 120px;
+        height: 120px;
         display: flex;
         align-items: center;
         justify-content: center;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+        animation: pulse 2s ease-in-out infinite;
     }
-    .score-excellent { background: linear-gradient(135deg, #10b981, #34d399); color: white; }
-    .score-good { background: linear-gradient(135deg, #3b82f6, #60a5fa); color: white; }
-    .score-fair { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: white; }
-    .score-poor { background: linear-gradient(135deg, #ef4444, #f87171); color: white; }
     
+    .quality-score::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+        z-index: -1;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    .score-excellent { 
+        background: linear-gradient(135deg, #10b981, #34d399, #6ee7b7);
+        color: white;
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+    }
+    .score-good { 
+        background: linear-gradient(135deg, #3b82f6, #60a5fa, #93c5fd);
+        color: white;
+        box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+    }
+    .score-fair { 
+        background: linear-gradient(135deg, #f59e0b, #fbbf24, #fcd34d);
+        color: white;
+        box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+    }
+    .score-poor { 
+        background: linear-gradient(135deg, #ef4444, #f87171, #fca5a5);
+        color: white;
+        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+    }
+    
+    /* Enhanced Metric Cards */
     .metric-card {
-        background: white;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        border: 1px solid #e5e7eb;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
         text-align: center;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     }
     
-    .template-card {
-        background: linear-gradient(135deg, #f0f9ff 0%, #dbeafe 100%);
-        padding: 1rem;
-        border-radius: 0.75rem;
-        border: 1px solid #93c5fd;
-        margin: 0.5rem 0;
-        cursor: pointer;
-        transition: transform 0.2s ease;
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #4f46e5, #7c3aed, #f093fb);
     }
+    
+    .metric-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+    
+    .metric-card h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .metric-card p {
+        margin: 0.5rem 0 0 0;
+        color: #6b7280;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    /* Enhanced Template Cards */
+    .template-card {
+        background: linear-gradient(135deg, rgba(240, 249, 255, 0.9) 0%, rgba(219, 234, 254, 0.9) 100%);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem;
+        border-radius: 16px;
+        border: 1px solid rgba(147, 197, 253, 0.3);
+        margin: 1rem 0;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .template-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s;
+    }
+    
     .template-card:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 12px 30px rgba(59, 130, 246, 0.2);
+    }
+    
+    .template-card:hover::before {
+        transform: translateX(100%);
+    }
+    
+    /* Enhanced Buttons with Better Visibility */
+    .stButton > button {
+        background: #2563eb !important;
+        color: white !important;
+        border: 2px solid #2563eb !important;
+        border-radius: 8px !important;
+        padding: 0.75rem 1.5rem !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3) !important;
+        min-height: 45px !important;
+    }
+    
+    .stButton > button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+    }
+    
+    .stButton > button:hover::before {
+        left: 100%;
+    }
+    
+    .stButton > button:focus {
+        outline: 3px solid rgba(37, 99, 235, 0.4) !important;
+        outline-offset: 2px !important;
+        background: #2563eb !important;
+    }
+    
+    /* Enhanced Sidebar */
+    .css-1d391kg {
+        background: linear-gradient(180deg, #f8faff 0%, #e0e7ff 100%);
+        border-right: 1px solid rgba(79, 70, 229, 0.1);
+    }
+    
+    /* Enhanced Selectboxes with Better Visibility */
+    .stSelectbox > div > div {
+        border-radius: 8px !important;
+        border: 2px solid #374151 !important;
+        background: #374151 !important;
+        color: white !important;
+        transition: all 0.3s ease !important;
+        font-weight: 500 !important;
+        box-shadow: 0 2px 4px rgba(55, 65, 81, 0.3) !important;
+    }
+    
+    .stSelectbox > div > div:hover {
+        border-color: #4b5563 !important;
+        background: #4b5563 !important;
+        box-shadow: 0 4px 8px rgba(75, 85, 99, 0.4) !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    .stSelectbox > div > div > div {
+        color: white !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Enhanced File Uploader */
+    .stFileUploader > div {
+        border: 2px dashed rgba(79, 70, 229, 0.3);
+        border-radius: 16px;
+        background: rgba(240, 249, 255, 0.5);
+        transition: all 0.3s ease;
+    }
+    
+    .stFileUploader > div:hover {
+        border-color: #4f46e5;
+        background: rgba(240, 249, 255, 0.8);
+        transform: scale(1.02);
+    }
+    
+    /* Enhanced Dataframes */
+    .stDataFrame {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    /* Enhanced Progress Bars */
+    .stProgress > div > div > div {
+        background: linear-gradient(90deg, #4f46e5, #7c3aed, #f093fb);
+        border-radius: 10px;
+    }
+    
+    /* Enhanced Success/Error Messages */
+    .stAlert {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Enhanced Expanders */
+    .streamlit-expanderHeader {
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
+        border-radius: 12px;
+        border: 1px solid rgba(79, 70, 229, 0.1);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .streamlit-expanderHeader:hover {
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+        transform: translateY(-1px);
+    }
+    
+    /* Enhanced Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background: rgba(240, 249, 255, 0.5);
+        border-radius: 12px;
+        padding: 4px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px;
+        background: transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        box-shadow: 0 2px 10px rgba(79, 70, 229, 0.3);
+    }
+    
+    /* Enhanced Radio Buttons with Better Visibility */
+    .stRadio > div > label {
+        background: #374151 !important;
+        color: white !important;
+        border: 2px solid #374151 !important;
+        border-radius: 8px !important;
+        padding: 0.75rem 1rem !important;
+        margin: 0.25rem 0 !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+        font-weight: 500 !important;
+        box-shadow: 0 2px 4px rgba(55, 65, 81, 0.3) !important;
+    }
+    
+    .stRadio > div > label:hover {
+        border-color: #4b5563 !important;
+        background: #4b5563 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 8px rgba(75, 85, 99, 0.4) !important;
+    }
+    
+    .stRadio > div > label[data-testid="stRadio"] {
+        background: #2563eb !important;
+        color: white !important;
+        border-color: #2563eb !important;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4) !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Sidebar Radio Buttons Specific Styling */
+    .css-1d391kg .stRadio > div > label {
+        background: #374151 !important;
+        color: white !important;
+        border: 2px solid #374151 !important;
+        font-weight: 500 !important;
+        margin: 0.3rem 0 !important;
+    }
+    
+    .css-1d391kg .stRadio > div > label:hover {
+        background: #4b5563 !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    /* Enhanced Text Inputs */
+    .stTextInput > div > div > input {
+        border-radius: 12px;
+        border: 2px solid rgba(79, 70, 229, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .stTextInput > div > div > input:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    
+    /* Enhanced Sliders */
+    .stSlider > div > div > div > div {
+        background: linear-gradient(90deg, #4f46e5, #7c3aed);
+    }
+    
+    /* Enhanced Checkboxes */
+    .stCheckbox > label {
+        background: rgba(255, 255, 255, 0.8);
+        border: 2px solid rgba(79, 70, 229, 0.2);
+        border-radius: 8px;
+        padding: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stCheckbox > label:hover {
+        border-color: #4f46e5;
+        background: rgba(79, 70, 229, 0.05);
+    }
+    
+    /* Enhanced Multi-Select with Better Visibility */
+    .stMultiSelect > div > div {
+        border-radius: 12px !important;
+        border: 2px solid #1e40af !important;
+        background: linear-gradient(135deg, #1e40af 0%, #7c2d12 100%) !important;
+        transition: all 0.3s ease !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3) !important;
+    }
+    
+    .stMultiSelect > div > div:hover {
+        border-color: #1d4ed8 !important;
+        background: linear-gradient(135deg, #1d4ed8 0%, #92400e 100%) !important;
+        box-shadow: 0 6px 20px rgba(30, 64, 175, 0.4) !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    .stMultiSelect > div > div > div {
+        color: white !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Enhanced Tooltips */
+    .tooltip {
+        position: relative;
+        display: inline-block;
+        cursor: help;
+    }
+    
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 250px;
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        text-align: center;
+        padding: 12px;
+        border-radius: 12px;
+        position: absolute;
+        z-index: 1000;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -125px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+    
+    .tooltip:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+    }
+    
+    /* Loading Animations */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .loading {
+        animation: spin 1s linear infinite;
+    }
+    
+    /* Enhanced Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .main-header {
+            font-size: 2.5rem;
+        }
+        .section-header {
+            font-size: 1.6rem;
+        }
+        .metric-card {
+            margin-bottom: 1rem;
+            padding: 1rem;
+        }
+        .quality-score {
+            width: 100px;
+            height: 100px;
+            font-size: 2rem;
+        }
+        .feature-card {
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .stButton > button {
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+    }
+    
+    /* Enhanced Dark Mode Support */
+    @media (prefers-color-scheme: dark) {
+        .feature-card {
+            background: rgba(30, 30, 30, 0.95);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .metric-card {
+            background: rgba(30, 30, 30, 0.9);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .template-card {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.9) 0%, rgba(40, 40, 40, 0.9) 100%);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+    }
+    
+    /* Enhanced Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(240, 249, 255, 0.5);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #4338ca, #6d28d9);
+    }
+    
+    /* Enhanced Focus States */
+    *:focus {
+        outline: 2px solid #4f46e5;
+        outline-offset: 2px;
+    }
+    
+    /* Enhanced Animations for Charts */
+    .js-plotly-plot {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .js-plotly-plot:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.15);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    /* Enhanced Footer */
+    .enhanced-footer {
+        background: linear-gradient(135deg, #f8faff 0%, #e0e7ff 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 2rem 0;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(79, 70, 229, 0.1);
+        border: 1px solid rgba(79, 70, 229, 0.1);
+    }
+    
+    /* Enhanced Status Indicators */
+    .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .status-success { background: #10b981; }
+    .status-warning { background: #f59e0b; }
+    .status-error { background: #ef4444; }
+    .status-info { background: #3b82f6; }
+    
+    /* Enhanced Code Blocks */
+    .stCodeBlock {
+        border-radius: 12px;
+        border: 1px solid rgba(79, 70, 229, 0.1);
+        background: rgba(240, 249, 255, 0.5);
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    /* Enhanced Dividers */
+    hr {
+        border: none;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #4f46e5, transparent);
+        margin: 2rem 0;
+        border-radius: 1px;
+    }
+    
+    /* Enhanced Badges */
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0.25rem;
+    }
+    
+    .badge-primary {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+    }
+    
+    .badge-success {
+        background: linear-gradient(135deg, #10b981, #34d399);
+        color: white;
+    }
+    
+    .badge-warning {
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        color: white;
+    }
+    
+    .badge-error {
+        background: linear-gradient(135deg, #ef4444, #f87171);
+        color: white;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -586,16 +1222,57 @@ def create_dashboard(df, config):
         if fig3:
             st.plotly_chart(fig3, use_container_width=True)
 
-# Main Application UI
-st.markdown('<h1 class="main-header">🚀 Advanced Data Analytics Platform</h1>', unsafe_allow_html=True)
-st.markdown("### AI-Powered Data Cleaning, Analysis & Visualization")
-
-# Enhanced Sidebar
+# Simple Sidebar
 st.sidebar.title("🎛️ Control Panel")
+st.sidebar.markdown("Navigate through powerful features")
+
 main_section = st.sidebar.radio(
-    "Navigate to:",
-    ["🏠 Home", "📁 Data Upload", "🧠 AI Insights", "🧹 Smart Cleaning", "📊 Advanced Analytics", "🎨 Dashboard Builder", "📋 Templates", "⚙️ Settings"]
+    "Choose your destination:",
+    ["🏠 Home", "📁 Data Upload", "🧠 AI Insights", "🧹 Smart Cleaning", "📊 Advanced Analytics", "🎨 Dashboard Builder", "🔧 Pipeline Builder",
+     "🛠️ Feature Engineering", "🔬 Statistical Analysis", "🤖 AI Recommendations",
+     "📋 Templates", "👥 Collaboration", "⚙️ Settings"],
+    help="Select a section to explore different features of the platform"
 )
+
+# Main header - ONLY SHOW ON HOME PAGE
+if main_section == "🏠 Home":
+    st.markdown("# 📊 Datalix")
+    st.markdown("### AI-Powered Data Cleaning, Analysis & Visualization")
+    
+    st.markdown("---")
+    
+    # Feature highlights in bordered sections
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div style="border: 2px solid #e0e7ff; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f8faff;">
+            <h4 style="color: #4f46e5; margin-bottom: 15px;">🧹 Smart Cleaning</h4>
+            <p style="color: #6b7280; margin: 0;">AI-powered data cleaning with intelligent suggestions</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div style="border: 2px solid #e0e7ff; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f8faff;">
+            <h4 style="color: #4f46e5; margin-bottom: 15px;">📊 Advanced Analytics</h4>
+            <p style="color: #6b7280; margin: 0;">Statistical analysis & machine learning capabilities</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div style="border: 2px solid #e0e7ff; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f8faff;">
+            <h4 style="color: #4f46e5; margin-bottom: 15px;">🎨 Interactive Viz</h4>
+            <p style="color: #6b7280; margin: 0;">Dynamic visualizations and dashboards</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div style="border: 2px solid #e0e7ff; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f8faff;">
+            <h4 style="color: #4f46e5; margin-bottom: 15px;">🤖 AI Insights</h4>
+            <p style="color: #6b7280; margin: 0;">Intelligent recommendations and analysis</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 # Home Dashboard
 if main_section == "🏠 Home":
@@ -688,64 +1365,156 @@ if main_section == "🏠 Home":
                     </div>
                 """, unsafe_allow_html=True)
                 
-        # Quick Actions
+        # Enhanced Quick Actions
         st.markdown("### ⚡ Quick Actions")
         
         action_col1, action_col2, action_col3 = st.columns(3)
         
         with action_col1:
-            if st.button("🧹 Smart Clean", use_container_width=True):
+            st.markdown("""
+            <div class="feature-card" style="text-align: center; padding: 1.5rem; cursor: pointer; transition: all 0.3s ease;" onclick="document.querySelector('[data-testid=stButton] button').click()">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🧹</div>
+                <h4 style="margin: 0 0 0.5rem 0; color: #374151;">Smart Clean</h4>
+                <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">AI-powered data cleaning</p>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("🧹 Smart Clean", use_container_width=True, key="smart_clean_btn"):
                 st.session_state.redirect_to = "🧹 Smart Cleaning"
                 st.rerun()
         
         with action_col2:
-            if st.button("📊 Quick Viz", use_container_width=True):
+            st.markdown("""
+            <div class="feature-card" style="text-align: center; padding: 1.5rem; cursor: pointer; transition: all 0.3s ease;" onclick="document.querySelector('[data-testid=stButton] button').click()">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+                <h4 style="margin: 0 0 0.5rem 0; color: #374151;">Quick Viz</h4>
+                <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">Instant visualizations</p>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("📊 Quick Viz", use_container_width=True, key="quick_viz_btn"):
                 st.session_state.redirect_to = "📊 Advanced Analytics"
                 st.rerun()
                 
         with action_col3:
-            if st.button("🎨 Build Dashboard", use_container_width=True):
+            st.markdown("""
+            <div class="feature-card" style="text-align: center; padding: 1.5rem; cursor: pointer; transition: all 0.3s ease;" onclick="document.querySelector('[data-testid=stButton] button').click()">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🎨</div>
+                <h4 style="margin: 0 0 0.5rem 0; color: #374151;">Build Dashboard</h4>
+                <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">Custom dashboards</p>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("🎨 Build Dashboard", use_container_width=True, key="build_dashboard_btn"):
                 st.session_state.redirect_to = "🎨 Dashboard Builder"
                 st.rerun()
     
     else:
-        # Welcome screen when no data is loaded
+        # Clean welcome screen with bordered sections
+        st.markdown("## 👋 Welcome to Datalix!")
+        st.markdown("Transform your messy data into clean, analyzed, and visualized insights with the power of AI.")
+        
+        st.markdown("---")
+        
+        # Quick start guide with borders
+        st.markdown("### 🚀 Quick Start Guide")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("""
+            <div style="border: 2px solid #e0e7ff; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f8faff; text-align: center;">
+                <h4 style="color: #4f46e5; margin-bottom: 15px;">📁 Upload Data</h4>
+                <p style="color: #6b7280; margin: 0;">Support for CSV, Excel, JSON & more formats</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        with col2:
+            st.markdown("""
+            <div style="border: 2px solid #e0e7ff; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f8faff; text-align: center;">
+                <h4 style="color: #4f46e5; margin-bottom: 15px;">🧠 AI Analysis</h4>
+                <p style="color: #6b7280; margin: 0;">Smart insights & automated cleaning</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        with col3:
+            st.markdown("""
+            <div style="border: 2px solid #e0e7ff; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f8faff; text-align: center;">
+                <h4 style="color: #4f46e5; margin-bottom: 15px;">📊 Visualize</h4>
+                <p style="color: #6b7280; margin: 0;">Interactive charts & dashboards</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown("---")
         st.markdown("""
-        <div class="feature-card" style="text-align: center; padding: 3rem;">
-            <h2>👋 Welcome to the Advanced Data Analytics Platform!</h2>
-            <p style="font-size: 1.2rem; color: #6b7280; margin: 2rem 0;">
-                Transform your messy data into clean, analyzed, and visualized insights with the power of AI.
-            </p>
-            <p style="color: #9ca3af;">
-                🚀 Upload your dataset to get started with AI-powered data cleaning and analysis
-            </p>
+        <div style="border: 2px solid #fbbf24; border-radius: 10px; padding: 15px; margin: 10px 0; background-color: #fef3c7;">
+            <p style="color: #92400e; margin: 0; font-weight: bold;">💡 Tip: Upload your dataset to get started with AI-powered data cleaning and analysis</p>
         </div>
         """, unsafe_allow_html=True)
         
-        # Feature highlights
-        st.markdown("### ✨ What's New in Phase 1 & 2")
+        # Enhanced feature highlights - ONLY SHOW ON HOME PAGE
+        st.markdown("### ✨ Platform Features")
         
         feature_col1, feature_col2 = st.columns(2)
         
         with feature_col1:
             st.markdown("""
-            **🧠 AI-Powered Features:**
-            - Smart data quality assessment
-            - Automated cleaning suggestions  
-            - Intelligent data type detection
-            - ML-based missing value imputation
-            - Advanced outlier detection
-            """)
+            <div class="feature-card" style="padding: 1.5rem;">
+                <h4 style="background: linear-gradient(135deg, #4f46e5, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1rem;">
+                    🧠 AI-Powered Features
+                </h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(79, 70, 229, 0.05); border-radius: 8px; border-left: 3px solid #4f46e5;">
+                        <span class="badge badge-primary" style="margin-right: 0.5rem;">NEW</span>
+                        Smart data quality assessment
+                    </li>
+                    <li style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(79, 70, 229, 0.05); border-radius: 8px; border-left: 3px solid #4f46e5;">
+                        <span class="badge badge-success" style="margin-right: 0.5rem;">AI</span>
+                        Automated cleaning suggestions
+                    </li>
+                    <li style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(79, 70, 229, 0.05); border-radius: 8px; border-left: 3px solid #4f46e5;">
+                        <span class="badge badge-warning" style="margin-right: 0.5rem;">ML</span>
+                        Intelligent data type detection
+                    </li>
+                    <li style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(79, 70, 229, 0.05); border-radius: 8px; border-left: 3px solid #4f46e5;">
+                        <span class="badge badge-error" style="margin-right: 0.5rem;">ADV</span>
+                        ML-based missing value imputation
+                    </li>
+                    <li style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(79, 70, 229, 0.05); border-radius: 8px; border-left: 3px solid #4f46e5;">
+                        <span class="badge badge-primary" style="margin-right: 0.5rem;">ML</span>
+                        Advanced outlier detection
+                    </li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
             
         with feature_col2:
             st.markdown("""
-            **📊 Advanced Analytics:**
-            - 3D visualizations
-            - Clustering analysis
-            - Time series decomposition
-            - Interactive dashboards
-            - Template system for workflows
-            """)
+            <div class="feature-card" style="padding: 1.5rem;">
+                <h4 style="background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1rem;">
+                    📊 Advanced Analytics
+                </h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(16, 185, 129, 0.05); border-radius: 8px; border-left: 3px solid #10b981;">
+                        <span class="badge badge-success" style="margin-right: 0.5rem;">3D</span>
+                        3D visualizations
+                    </li>
+                    <li style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(16, 185, 129, 0.05); border-radius: 8px; border-left: 3px solid #10b981;">
+                        <span class="badge badge-warning" style="margin-right: 0.5rem;">ML</span>
+                        Clustering analysis
+                    </li>
+                    <li style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(16, 185, 129, 0.05); border-radius: 8px; border-left: 3px solid #10b981;">
+                        <span class="badge badge-primary" style="margin-right: 0.5rem;">TS</span>
+                        Time series decomposition
+                    </li>
+                    <li style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(16, 185, 129, 0.05); border-radius: 8px; border-left: 3px solid #10b981;">
+                        <span class="badge badge-error" style="margin-right: 0.5rem;">INT</span>
+                        Interactive dashboards
+                    </li>
+                    <li style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(16, 185, 129, 0.05); border-radius: 8px; border-left: 3px solid #10b981;">
+                        <span class="badge badge-primary" style="margin-right: 0.5rem;">TPL</span>
+                        Template system for workflows
+                    </li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
 
 # Enhanced Data Upload Section
 elif main_section == "📁 Data Upload":
@@ -796,7 +1565,21 @@ elif main_section == "📁 Data Upload":
     
     elif upload_method == "🌐 URL Import":
         st.markdown("### Import from URL")
-        url = st.text_input("Enter CSV/JSON URL:", placeholder="https://example.com/data.csv")
+        
+        # Sample URLs for testing
+        st.markdown("**💡 Sample URLs for testing:**")
+        sample_urls = {
+            "Iris Dataset": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv",
+            "Titanic Dataset": "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv",
+            "Diamonds Dataset": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/diamonds.csv"
+        }
+        
+        selected_sample = st.selectbox("Or choose a sample dataset:", ["None"] + list(sample_urls.keys()))
+        
+        if selected_sample != "None":
+            url = sample_urls[selected_sample]
+        else:
+            url = st.text_input("Enter CSV/JSON URL:", placeholder="https://example.com/data.csv")
         
         if url and st.button("📥 Import from URL"):
             try:
@@ -815,6 +1598,26 @@ elif main_section == "📁 Data Upload":
                 
             except Exception as e:
                 st.error(f"❌ Error importing data: {str(e)}")
+                
+        # Alternative: Create sample data if URLs don't work
+        st.markdown("**🔧 If sample URLs don't work, try this:**")
+        if st.button("📊 Generate Sample Data"):
+            # Create sample sales data
+            np.random.seed(42)
+            dates = pd.date_range('2023-01-01', periods=100, freq='D')
+            sample_data = pd.DataFrame({
+                'date': dates,
+                'product': np.random.choice(['Laptop', 'Phone', 'Tablet', 'Monitor'], 100),
+                'sales_amount': np.random.normal(500, 150, 100),
+                'quantity': np.random.poisson(3, 100),
+                'customer_region': np.random.choice(['North', 'South', 'East', 'West'], 100),
+                'profit_margin': np.random.uniform(0.1, 0.4, 100)
+            })
+            
+            st.session_state.df = sample_data
+            st.session_state.original_df = sample_data.copy()
+            st.success("✅ Sample data generated successfully!")
+            st.dataframe(sample_data.head(), use_container_width=True)
     
     elif upload_method == "📊 Sample Data":
         st.markdown("### Try with Sample Datasets")
@@ -4097,7 +4900,7 @@ def advanced_export_options(df):
             </head>
             <body>
                 <div class="header">
-                    <h1>🚀 Advanced Data Analytics Platform</h1>
+                    <h1>📊 Datalix</h1>
                     <h2>Data Cleaning Report</h2>
                     <p>Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
                 </div>
@@ -4206,15 +5009,36 @@ if st.session_state.df is not None:
 # Initialize mobile optimization
 mobile_optimized_interface()
 
-# Final comprehensive footer
-st.markdown("---")
-st.markdown("""
-<div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #f8faff 0%, #e0e7ff 100%); border-radius: 1rem; margin: 2rem 0;">
-    <h3>🚀 Advanced Data Analytics Platform</h3>
-    <p><strong>Phase 1 & 2 Complete Implementation</strong></p>
-    <p>AI-Powered Data Cleaning • Advanced Analytics • Interactive Visualizations • Collaboration Features</p>
-    <p style="font-size: 0.9rem; color: #6b7280;">
-        Built with Streamlit, Pandas, Plotly, Scikit-learn, and AI-powered insights
-    </p>
-</div>
-""", unsafe_allow_html=True)
+# Footer - ONLY SHOW ON HOME PAGE
+if main_section == "🏠 Home":
+    st.markdown("---")
+    st.markdown("### 📊 Datalix")
+    st.markdown("**Complete Implementation with AI-Powered Features**")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("**Features:**")
+        st.markdown("• AI-Powered Data Cleaning")
+        st.markdown("• Advanced Analytics")
+        st.markdown("• Interactive Visualizations")
+    
+    with col2:
+        st.markdown("**Built with:**")
+        st.markdown("• Streamlit")
+        st.markdown("• Pandas")
+        st.markdown("• Plotly")
+        st.markdown("• Scikit-learn")
+    
+    with col3:
+        st.markdown("**Capabilities:**")
+        st.markdown("• Real-time Processing")
+        st.markdown("• Interactive Dashboards")
+        st.markdown("• Advanced ML Tools")
+    
+    st.markdown("---")
+    st.markdown("*© 2025 Datalix*")
+else:
+    # Simple footer for other pages
+    st.markdown("---")
+    st.markdown("*© 2025 Datalix*")
