@@ -1,0 +1,27 @@
+# Core Dependencies
+streamlit
+pandas
+numpy
+
+# Visualization Libraries
+plotly
+matplotlib
+seaborn
+
+# Machine Learning & Statistics
+scikit-learn
+scipy
+
+# File Processing
+openpyxl
+xlrd
+pyarrow
+chardet
+
+# Additional Utilities
+requests
+urllib3
+jsonschema
+python-dateutil
+pytz
+
