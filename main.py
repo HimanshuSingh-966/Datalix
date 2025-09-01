@@ -31,7 +31,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
     menu_items={
         'Get Help': 'https://github.com/HimanshuSingh-966/Datalix',
-        'Report a bug': "https://github.com/HimanshuSingh-966/Datalix",
+        'Report a bug': "https://github.com/HimanshuSingh-966/Datalix/issues",
         'About': "# Datalix\n\nAI-Powered Data Cleaning, Analysis & Visualization"
     }
 )
@@ -100,12 +100,12 @@ st.markdown("""
         100% { transform: translateX(0); }
     }
     
-    /* Enhanced Feature Cards with Glassmorphism */
+    /* Enhanced Feature Cards with Equal Sizing */
     .feature-card {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(79, 70, 229, 0.2);
         border-radius: 20px;
         padding: 2rem;
         margin: 1.5rem 0;
@@ -113,6 +113,39 @@ st.markdown("""
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
+        min-height: 200px;
+        height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    
+    /* Equal sized feature cards for home page */
+    .home-feature-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(79, 70, 229, 0.2);
+        border-radius: 16px;
+        padding: 24px;
+        margin: 12px 0;
+        box-shadow: 0 6px 24px rgba(79, 70, 229, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        height: 180px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .home-feature-card:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 12px 32px rgba(79, 70, 229, 0.2);
+        border-color: #4f46e5;
     }
     
     .feature-card::before {
@@ -137,16 +170,17 @@ st.markdown("""
     
     /* Enhanced AI Suggestion Cards */
     .ai-suggestion {
-        background: linear-gradient(135deg, rgba(254, 243, 199, 0.9) 0%, rgba(251, 191, 36, 0.9) 100%);
+        background: rgba(249, 250, 251, 0.95);
         backdrop-filter: blur(10px);
         padding: 1.5rem;
         border-radius: 16px;
-        border-left: 6px solid #f59e0b;
+        border-left: 6px solid #3b82f6;
         margin: 1.5rem 0;
-        box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        color: #1f2937;
     }
     
     .ai-suggestion::before {
@@ -156,7 +190,7 @@ st.markdown("""
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+        background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
         animation: shimmer 2s linear infinite;
     }
     
@@ -167,7 +201,7 @@ st.markdown("""
     
     .ai-suggestion:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.25);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.25);
     }
     
     /* Enhanced Quality Score with 3D Effect */
@@ -352,10 +386,60 @@ st.markdown("""
         background: #2563eb !important;
     }
     
-    /* Enhanced Sidebar */
+    /* Enhanced Sidebar with Navigation Button Styling */
     .css-1d391kg {
         background: linear-gradient(180deg, #f8faff 0%, #e0e7ff 100%);
         border-right: 1px solid rgba(79, 70, 229, 0.1);
+    }
+    
+    /* Navigation Sidebar Buttons - Equal Width, Fixed Height, Consistent Background */
+    .css-1d391kg .stRadio > div {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .css-1d391kg .stRadio > div > label {
+        width: 100% !important;
+        height: 50px !important;
+        background: #374151 !important;
+        color: white !important;
+        border: 2px solid #374151 !important;
+        border-radius: 12px !important;
+        padding: 12px 16px !important;
+        margin: 4px 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        font-weight: 500 !important;
+        font-size: 14px !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+        box-shadow: 0 2px 4px rgba(55, 65, 81, 0.2) !important;
+        text-align: left !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    
+    .css-1d391kg .stRadio > div > label:hover {
+        background: #4b5563 !important;
+        border-color: #4b5563 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 8px rgba(75, 85, 99, 0.3) !important;
+    }
+    
+    .css-1d391kg .stRadio > div > label[data-checked="true"] {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+        border-color: #2563eb !important;
+        color: white !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
+    }
+    
+    /* Auto-scroll to top functionality */
+    .main .block-container {
+        scroll-behavior: smooth;
     }
     
     /* Enhanced Selectboxes with Better Visibility */
@@ -449,47 +533,37 @@ st.markdown("""
         box-shadow: 0 2px 10px rgba(79, 70, 229, 0.3);
     }
     
-    /* Enhanced Radio Buttons with Better Visibility */
+    /* Enhanced Radio Buttons with Better Visibility for Light Mode */
     .stRadio > div > label {
-        background: #374151 !important;
+        background: #2563eb !important;
         color: white !important;
-        border: 2px solid #374151 !important;
-        border-radius: 8px !important;
-        padding: 0.75rem 1rem !important;
-        margin: 0.25rem 0 !important;
+        border: 2px solid #2563eb !important;
+        border-radius: 10px !important;
+        padding: 12px 16px !important;
+        margin: 8px 0 !important;
         transition: all 0.3s ease !important;
         cursor: pointer !important;
-        font-weight: 500 !important;
-        box-shadow: 0 2px 4px rgba(55, 65, 81, 0.3) !important;
+        font-weight: 600 !important;
+        box-shadow: 0 3px 6px rgba(37, 99, 235, 0.3) !important;
+        display: block !important;
+        width: 100% !important;
+        text-align: center !important;
     }
     
     .stRadio > div > label:hover {
-        border-color: #4b5563 !important;
-        background: #4b5563 !important;
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 8px rgba(75, 85, 99, 0.4) !important;
+        border-color: #1d4ed8 !important;
+        background: #1d4ed8 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 12px rgba(29, 78, 216, 0.4) !important;
     }
     
-    .stRadio > div > label[data-testid="stRadio"] {
-        background: #2563eb !important;
+    .stRadio > div > label[data-checked="true"] {
+        background: linear-gradient(135deg, #1e40af, #1d4ed8) !important;
         color: white !important;
-        border-color: #2563eb !important;
-        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4) !important;
-        font-weight: 600 !important;
-    }
-    
-    /* Sidebar Radio Buttons Specific Styling */
-    .css-1d391kg .stRadio > div > label {
-        background: #374151 !important;
-        color: white !important;
-        border: 2px solid #374151 !important;
-        font-weight: 500 !important;
-        margin: 0.3rem 0 !important;
-    }
-    
-    .css-1d391kg .stRadio > div > label:hover {
-        background: #4b5563 !important;
-        transform: translateY(-1px) !important;
+        border-color: #1e40af !important;
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.5) !important;
+        font-weight: 700 !important;
+        transform: scale(1.02) !important;
     }
     
     /* Enhanced Text Inputs */
@@ -509,18 +583,31 @@ st.markdown("""
         background: linear-gradient(90deg, #4f46e5, #7c3aed);
     }
     
-    /* Enhanced Checkboxes */
+    /* Enhanced Checkboxes with Better Light Mode Visibility */
     .stCheckbox > label {
-        background: rgba(255, 255, 255, 0.8);
-        border: 2px solid rgba(79, 70, 229, 0.2);
-        border-radius: 8px;
-        padding: 0.5rem;
-        transition: all 0.3s ease;
+        background: #2563eb !important;
+        color: white !important;
+        border: 2px solid #2563eb !important;
+        border-radius: 10px !important;
+        padding: 12px 16px !important;
+        transition: all 0.3s ease !important;
+        font-weight: 600 !important;
+        box-shadow: 0 3px 6px rgba(37, 99, 235, 0.3) !important;
+        display: block !important;
+        margin: 8px 0 !important;
     }
     
     .stCheckbox > label:hover {
-        border-color: #4f46e5;
-        background: rgba(79, 70, 229, 0.05);
+        border-color: #1d4ed8 !important;
+        background: #1d4ed8 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 8px rgba(29, 78, 216, 0.4) !important;
+    }
+    
+    .stCheckbox input[type="checkbox"]:checked + label {
+        background: linear-gradient(135deg, #1e40af, #1d4ed8) !important;
+        border-color: #1e40af !important;
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.5) !important;
     }
     
     /* Enhanced Multi-Select with Better Visibility */
@@ -667,15 +754,48 @@ st.markdown("""
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
     
-    /* Enhanced Footer */
+    /* Enhanced Footer - Centered */
     .enhanced-footer {
         background: linear-gradient(135deg, #f8faff 0%, #e0e7ff 100%);
         border-radius: 20px;
         padding: 2rem;
-        margin: 2rem 0;
+        margin: 2rem auto;
         text-align: center;
         box-shadow: 0 8px 32px rgba(79, 70, 229, 0.1);
         border: 1px solid rgba(79, 70, 229, 0.1);
+        max-width: 1200px;
+    }
+    
+    /* Centered Header Card */
+    .header-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 255, 0.95) 100%);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(79, 70, 229, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 1rem auto 2rem auto;
+        box-shadow: 0 8px 32px rgba(79, 70, 229, 0.1);
+        text-align: center;
+        max-width: 800px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .header-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #4f46e5, #7c3aed, #f093fb);
+    }
+    
+    /* Centered page content */
+    .centered-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
     }
     
     /* Enhanced Status Indicators */
@@ -1095,7 +1215,71 @@ def create_advanced_visualization(df, viz_config):
     """Create advanced visualizations with multiple chart types"""
     chart_type = viz_config.get('type')
     
-    if chart_type == '3D Scatter':
+    # Handle basic chart types first
+    if chart_type == 'Bar Chart':
+        x_col = viz_config.get('x')
+        y_col = viz_config.get('y')
+        if x_col:
+            if y_col and y_col in df.columns:
+                fig = px.bar(df, x=x_col, y=y_col, 
+                           title=f"Bar Chart: {x_col} vs {y_col}",
+                           color=viz_config.get('color'))
+            else:
+                # Count plot if no y column specified
+                value_counts = df[x_col].value_counts().head(20)
+                fig = px.bar(x=value_counts.index, y=value_counts.values,
+                           title=f"Bar Chart: {x_col} Distribution",
+                           labels={'x': x_col, 'y': 'Count'})
+            return fig
+    
+    elif chart_type == 'Line Chart':
+        x_col, y_col = viz_config.get('x'), viz_config.get('y')
+        if x_col and y_col:
+            fig = px.line(df, x=x_col, y=y_col,
+                         title=f"Line Chart: {x_col} vs {y_col}",
+                         color=viz_config.get('color'))
+            return fig
+    
+    elif chart_type == 'Scatter Plot':
+        x_col, y_col = viz_config.get('x'), viz_config.get('y')
+        if x_col and y_col:
+            fig = px.scatter(df, x=x_col, y=y_col,
+                           title=f"Scatter Plot: {x_col} vs {y_col}",
+                           color=viz_config.get('color'))
+            return fig
+    
+    elif chart_type == 'Histogram':
+        x_col = viz_config.get('x')
+        if x_col:
+            fig = px.histogram(df, x=x_col,
+                             title=f"Histogram: {x_col}",
+                             color=viz_config.get('color'))
+            return fig
+    
+    elif chart_type == 'Box Plot':
+        x_col, y_col = viz_config.get('x'), viz_config.get('y')
+        if y_col:
+            fig = px.box(df, x=x_col, y=y_col,
+                        title=f"Box Plot: {y_col} by {x_col}" if x_col else f"Box Plot: {y_col}")
+            return fig
+    
+    elif chart_type == 'Pie Chart':
+        x_col = viz_config.get('x')
+        if x_col:
+            value_counts = df[x_col].value_counts().head(10)
+            fig = px.pie(values=value_counts.values, names=value_counts.index,
+                        title=f"Pie Chart: {x_col} Distribution")
+            return fig
+    
+    elif chart_type == 'Heatmap':
+        numeric_cols = df.select_dtypes(include=[np.number]).columns
+        if len(numeric_cols) > 1:
+            corr_matrix = df[numeric_cols].corr()
+            fig = px.imshow(corr_matrix, title="Correlation Heatmap",
+                          color_continuous_scale="RdBu_r")
+            return fig
+    
+    elif chart_type == '3D Scatter':
         x_col, y_col, z_col = viz_config.get('x'), viz_config.get('y'), viz_config.get('z')
         if all([x_col, y_col, z_col]):
             fig = px.scatter_3d(df, x=x_col, y=y_col, z=z_col,
@@ -1193,7 +1377,7 @@ def perform_clustering_analysis(df, n_clusters=3):
 
 # Dashboard Builder
 def create_dashboard(df, config):
-    """Create a multi-panel dashboard"""
+    """Create a multi-panel dashboard with fixed chart generation"""
     st.markdown("### 📊 Interactive Dashboard")
     
     # Create layout based on config
@@ -1201,76 +1385,115 @@ def create_dashboard(df, config):
     
     with cols[0]:
         # Chart 1
-        if 'chart1' in config:
+        if 'chart1' in config and config['chart1']['type'] != "None":
             chart1_config = config['chart1']
-            fig1 = create_advanced_visualization(df, chart1_config)
-            if fig1:
-                st.plotly_chart(fig1, use_container_width=True)
+            try:
+                fig1 = create_advanced_visualization(df, chart1_config)
+                
+                if fig1:
+                    st.plotly_chart(fig1, use_container_width=True)
+                else:
+                    st.error(f"Could not generate {chart1_config['type']}")
+            except Exception as e:
+                st.error(f"Chart generation error: {str(e)}")
     
     with cols[1]:
         # Chart 2
-        if 'chart2' in config:
+        if 'chart2' in config and config['chart2']['type'] != "None":
             chart2_config = config['chart2']
-            fig2 = create_advanced_visualization(df, chart2_config)
-            if fig2:
-                st.plotly_chart(fig2, use_container_width=True)
+            try:
+                fig2 = create_advanced_visualization(df, chart2_config)
+                
+                if fig2:
+                    st.plotly_chart(fig2, use_container_width=True)
+                else:
+                    st.error(f"Could not generate {chart2_config['type']}")
+            except Exception as e:
+                st.error(f"Chart generation error: {str(e)}")
     
     # Full width chart
-    if 'chart3' in config:
+    if 'chart3' in config and config['chart3']['type'] != "None":
         chart3_config = config['chart3']
-        fig3 = create_advanced_visualization(df, chart3_config)
-        if fig3:
-            st.plotly_chart(fig3, use_container_width=True)
+        try:
+            fig3 = create_advanced_visualization(df, chart3_config)
+            
+            if fig3:
+                st.plotly_chart(fig3, use_container_width=True)
+            else:
+                st.error(f"Could not generate {chart3_config['type']}")
+        except Exception as e:
+            st.error(f"Chart generation error: {str(e)}")
 
-# Simple Sidebar
+# Enhanced Sidebar with Auto-scroll
 st.sidebar.title("🎛️ Control Panel")
 st.sidebar.markdown("Navigate through powerful features")
+
+# Auto-scroll to top when navigation changes
+if 'previous_section' not in st.session_state:
+    st.session_state.previous_section = "🏠 Home"
 
 main_section = st.sidebar.radio(
     "Choose your destination:",
     ["🏠 Home", "📁 Data Upload", "🧠 AI Insights", "🧹 Smart Cleaning", "📊 Advanced Analytics", "🎨 Dashboard Builder", "🔧 Pipeline Builder",
-     "🛠️ Feature Engineering", "🔬 Statistical Analysis", "🤖 AI Recommendations",
-     "📋 Templates", "👥 Collaboration", "⚙️ Settings"],
+     "🛠️ Feature Engineering", "🔬 Statistical Analysis", "📤 Export Data",
+     "👥 Collaboration", "⚙️ Settings"],
     help="Select a section to explore different features of the platform"
 )
 
-# Main header - ONLY SHOW ON HOME PAGE
+# Auto-scroll to top when section changes
+if main_section != st.session_state.previous_section:
+    st.session_state.previous_section = main_section
+    st.markdown("""
+    <script>
+        window.parent.document.querySelector('.main').scrollTop = 0;
+    </script>
+    """, unsafe_allow_html=True)
+
+# Main header wrapped in styled card
 if main_section == "🏠 Home":
-    st.markdown("# 📊 Datalix")
-    st.markdown("### AI-Powered Data Cleaning, Analysis & Visualization")
+    st.markdown("""
+    <div class="header-card">
+        <h1 class="main-header">📊 Datalix - AI-Powered Data Cleaning and Analysis Platform</h1>
+        <p style="font-size: 1.2rem; color: #6b7280; margin: 0; font-weight: 500;">AI-Powered Data Cleaning, Analysis & Visualization Platform</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("---")
     
-    # Feature highlights in bordered sections
+    # Feature highlights with equal sizing
     col1, col2 = st.columns(2)
     
     with col1:
         st.markdown("""
-        <div style="border: 2px solid #e0e7ff; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f8faff;">
-            <h4 style="color: #4f46e5; margin-bottom: 15px;">🧹 Smart Cleaning</h4>
-            <p style="color: #6b7280; margin: 0;">AI-powered data cleaning with intelligent suggestions</p>
+        <div class="home-feature-card">
+            <div style="font-size: 2.5rem; margin-bottom: 1rem;">🧹</div>
+            <h4 style="color: #4f46e5; margin-bottom: 12px; font-size: 1.1rem;">Smart Cleaning</h4>
+            <p style="color: #6b7280; margin: 0; font-size: 0.9rem;">AI-powered data cleaning with intelligent suggestions</p>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("""
-        <div style="border: 2px solid #e0e7ff; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f8faff;">
-            <h4 style="color: #4f46e5; margin-bottom: 15px;">📊 Advanced Analytics</h4>
-            <p style="color: #6b7280; margin: 0;">Statistical analysis & machine learning capabilities</p>
+        <div class="home-feature-card">
+            <div style="font-size: 2.5rem; margin-bottom: 1rem;">📊</div>
+            <h4 style="color: #4f46e5; margin-bottom: 12px; font-size: 1.1rem;">Advanced Analytics</h4>
+            <p style="color: #6b7280; margin: 0; font-size: 0.9rem;">Statistical analysis & machine learning capabilities</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
         st.markdown("""
-        <div style="border: 2px solid #e0e7ff; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f8faff;">
-            <h4 style="color: #4f46e5; margin-bottom: 15px;">🎨 Interactive Viz</h4>
-            <p style="color: #6b7280; margin: 0;">Dynamic visualizations and dashboards</p>
+        <div class="home-feature-card">
+            <div style="font-size: 2.5rem; margin-bottom: 1rem;">🎨</div>
+            <h4 style="color: #4f46e5; margin-bottom: 12px; font-size: 1.1rem;">Interactive Viz</h4>
+            <p style="color: #6b7280; margin: 0; font-size: 0.9rem;">Dynamic visualizations and dashboards</p>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("""
-        <div style="border: 2px solid #e0e7ff; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f8faff;">
-            <h4 style="color: #4f46e5; margin-bottom: 15px;">🤖 AI Insights</h4>
-            <p style="color: #6b7280; margin: 0;">Intelligent recommendations and analysis</p>
+        <div class="home-feature-card">
+            <div style="font-size: 2.5rem; margin-bottom: 1rem;">🤖</div>
+            <h4 style="color: #4f46e5; margin-bottom: 12px; font-size: 1.1rem;">AI Insights</h4>
+            <p style="color: #6b7280; margin: 0; font-size: 0.9rem;">Intelligent recommendations and analysis</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1372,9 +1595,9 @@ if main_section == "🏠 Home":
         
         with action_col1:
             st.markdown("""
-            <div class="feature-card" style="text-align: center; padding: 1.5rem; cursor: pointer; transition: all 0.3s ease;" onclick="document.querySelector('[data-testid=stButton] button').click()">
+            <div class="home-feature-card">
                 <div style="font-size: 3rem; margin-bottom: 1rem;">🧹</div>
-                <h4 style="margin: 0 0 0.5rem 0; color: #374151;">Smart Clean</h4>
+                <h4 style="margin: 0 0 0.5rem 0; color: #374151; font-size: 1.1rem;">Smart Clean</h4>
                 <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">AI-powered data cleaning</p>
             </div>
             """, unsafe_allow_html=True)
@@ -1384,9 +1607,9 @@ if main_section == "🏠 Home":
         
         with action_col2:
             st.markdown("""
-            <div class="feature-card" style="text-align: center; padding: 1.5rem; cursor: pointer; transition: all 0.3s ease;" onclick="document.querySelector('[data-testid=stButton] button').click()">
+            <div class="home-feature-card">
                 <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
-                <h4 style="margin: 0 0 0.5rem 0; color: #374151;">Quick Viz</h4>
+                <h4 style="margin: 0 0 0.5rem 0; color: #374151; font-size: 1.1rem;">Quick Viz</h4>
                 <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">Instant visualizations</p>
             </div>
             """, unsafe_allow_html=True)
@@ -1396,9 +1619,9 @@ if main_section == "🏠 Home":
                 
         with action_col3:
             st.markdown("""
-            <div class="feature-card" style="text-align: center; padding: 1.5rem; cursor: pointer; transition: all 0.3s ease;" onclick="document.querySelector('[data-testid=stButton] button').click()">
+            <div class="home-feature-card">
                 <div style="font-size: 3rem; margin-bottom: 1rem;">🎨</div>
-                <h4 style="margin: 0 0 0.5rem 0; color: #374151;">Build Dashboard</h4>
+                <h4 style="margin: 0 0 0.5rem 0; color: #374151; font-size: 1.1rem;">Build Dashboard</h4>
                 <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">Custom dashboards</p>
             </div>
             """, unsafe_allow_html=True)
@@ -1420,25 +1643,28 @@ if main_section == "🏠 Home":
         
         with col1:
             st.markdown("""
-            <div style="border: 2px solid #e0e7ff; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f8faff; text-align: center;">
-                <h4 style="color: #4f46e5; margin-bottom: 15px;">📁 Upload Data</h4>
-                <p style="color: #6b7280; margin: 0;">Support for CSV, Excel, JSON & more formats</p>
+            <div class="home-feature-card">
+                <div style="font-size: 2.5rem; margin-bottom: 1rem;">📁</div>
+                <h4 style="color: #4f46e5; margin-bottom: 12px; font-size: 1.1rem;">Upload Data</h4>
+                <p style="color: #6b7280; margin: 0; font-size: 0.9rem;">Support for CSV, Excel, JSON & more formats</p>
             </div>
             """, unsafe_allow_html=True)
             
         with col2:
             st.markdown("""
-            <div style="border: 2px solid #e0e7ff; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f8faff; text-align: center;">
-                <h4 style="color: #4f46e5; margin-bottom: 15px;">🧠 AI Analysis</h4>
-                <p style="color: #6b7280; margin: 0;">Smart insights & automated cleaning</p>
+            <div class="home-feature-card">
+                <div style="font-size: 2.5rem; margin-bottom: 1rem;">🧠</div>
+                <h4 style="color: #4f46e5; margin-bottom: 12px; font-size: 1.1rem;">AI Analysis</h4>
+                <p style="color: #6b7280; margin: 0; font-size: 0.9rem;">Smart insights & automated cleaning</p>
             </div>
             """, unsafe_allow_html=True)
             
         with col3:
             st.markdown("""
-            <div style="border: 2px solid #e0e7ff; border-radius: 10px; padding: 20px; margin: 10px 0; background-color: #f8faff; text-align: center;">
-                <h4 style="color: #4f46e5; margin-bottom: 15px;">📊 Visualize</h4>
-                <p style="color: #6b7280; margin: 0;">Interactive charts & dashboards</p>
+            <div class="home-feature-card">
+                <div style="font-size: 2.5rem; margin-bottom: 1rem;">📊</div>
+                <h4 style="color: #4f46e5; margin-bottom: 12px; font-size: 1.1rem;">Visualize</h4>
+                <p style="color: #6b7280; margin: 0; font-size: 0.9rem;">Interactive charts & dashboards</p>
             </div>
             """, unsafe_allow_html=True)
         
@@ -1518,13 +1744,44 @@ if main_section == "🏠 Home":
 
 # Enhanced Data Upload Section
 elif main_section == "📁 Data Upload":
+    st.markdown('<div class="centered-content">', unsafe_allow_html=True)
     st.markdown('<h2 class="section-header">📁 Advanced Data Upload</h2>', unsafe_allow_html=True)
     
-    # Upload options
+    # Upload options with styled radio buttons
+    st.markdown("""
+    <style>
+    .upload-radio-container .stRadio > div {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .upload-radio-container .stRadio > div > label {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        font-weight: 600;
+        min-width: 150px;
+        text-align: center;
+    }
+    .upload-radio-container .stRadio > div > label:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+    </style>
+    <div class="upload-radio-container">
+    """, unsafe_allow_html=True)
+    
     upload_method = st.radio(
         "Choose upload method:",
         ["📄 File Upload", "🌐 URL Import", "📊 Sample Data"]
     )
+    
+    st.markdown("</div>", unsafe_allow_html=True)
     
     if upload_method == "📄 File Upload":
         uploaded_files = st.file_uploader(
@@ -1693,10 +1950,13 @@ elif main_section == "📁 Data Upload":
                     st.session_state.df = df
                     st.session_state.original_df = df.copy()
                     st.success(f"✅ {name} loaded successfully!")
+    
+    st.markdown("</div>", unsafe_allow_html=True)
 
-# AI Insights Section
+# AI Insights Section (Merged with AI Recommendations)
 elif main_section == "🧠 AI Insights":
-    st.markdown('<h2 class="section-header">🧠 AI-Powered Data Insights</h2>', unsafe_allow_html=True)
+    st.markdown('<div class="centered-content">', unsafe_allow_html=True)
+    st.markdown('<h2 class="section-header">🧠 AI-Powered Insights & Recommendations</h2>', unsafe_allow_html=True)
     
     if st.session_state.df is None:
         st.warning("⚠️ Please upload a dataset first!")
@@ -1868,9 +2128,70 @@ elif main_section == "🧠 AI Insights":
                 st.dataframe(pd.DataFrame(strong_corr), use_container_width=True)
             else:
                 st.info("No strong correlations found.")
+    
+    # AI Recommendations Section (Merged)
+    st.markdown("### 🤖 AI-Powered Recommendations")
+    
+    # Generate intelligent recommendations
+    recommendations = []
+    
+    # Data quality recommendations
+    missing_pct = (df.isnull().sum().sum() / (df.shape[0] * df.shape[1])) * 100
+    if missing_pct > 10:
+        recommendations.append({
+            'type': 'warning',
+            'title': 'Missing Data Treatment',
+            'message': f'Your dataset has {missing_pct:.1f}% missing values. Consider using advanced imputation methods.',
+            'action': 'Use ML-based imputation in Smart Cleaning section'
+        })
+    
+    # Outlier recommendations
+    numeric_cols = df.select_dtypes(include=[np.number]).columns
+    if len(numeric_cols) > 0:
+        outlier_cols = []
+        for col in numeric_cols:
+            Q1, Q3 = df[col].quantile([0.25, 0.75])
+            IQR = Q3 - Q1
+            outliers = ((df[col] < (Q1 - 1.5 * IQR)) | (df[col] > (Q3 + 1.5 * IQR))).sum()
+            if outliers > len(df) * 0.05:
+                outlier_cols.append(col)
+        
+        if outlier_cols:
+            recommendations.append({
+                'type': 'info',
+                'title': 'Outlier Detection',
+                'message': f'Potential outliers detected in: {", ".join(outlier_cols[:3])}',
+                'action': 'Review outliers in Advanced Analytics section'
+            })
+    
+    # Visualization recommendations
+    if len(numeric_cols) >= 2:
+        recommendations.append({
+            'type': 'success',
+            'title': 'Visualization Opportunities',
+            'message': 'Your data is suitable for correlation analysis and scatter plots.',
+            'action': 'Create visualizations in Dashboard Builder'
+        })
+    
+    # Display recommendations
+    if recommendations:
+        for rec in recommendations:
+            icon = "✅" if rec['type'] == 'success' else "⚠️" if rec['type'] == 'warning' else "💡"
+            st.markdown(f"""
+                <div class="ai-suggestion">
+                    <h4>{icon} {rec['title']}</h4>
+                    <p>{rec['message']}</p>
+                    <small><strong>Recommended Action:</strong> {rec['action']}</small>
+                </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.success("🎉 Your data looks great! No immediate recommendations.")
+    
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Smart Cleaning Section
 elif main_section == "🧹 Smart Cleaning":
+    st.markdown('<div class="centered-content">', unsafe_allow_html=True)
     st.markdown('<h2 class="section-header">🧹 AI-Powered Smart Cleaning</h2>', unsafe_allow_html=True)
     
     if st.session_state.df is None:
@@ -2150,9 +2471,12 @@ elif main_section == "🧹 Smart Cleaning":
                 if template_name:
                     save_cleaning_template(template_name, st.session_state.cleaning_history.copy())
                     st.success(f"✅ Template '{template_name}' saved!")
+    
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Advanced Analytics Section  
 elif main_section == "📊 Advanced Analytics":
+    st.markdown('<div class="centered-content">', unsafe_allow_html=True)
     st.markdown('<h2 class="section-header">📊 Advanced Analytics & Visualization</h2>', unsafe_allow_html=True)
     
     if st.session_state.df is None:
@@ -2862,9 +3186,12 @@ elif main_section == "📊 Advanced Analytics":
                     st.error(f"Time series analysis failed: {str(e)}")
         else:
             st.info("Time series analysis requires at least one date column and one numeric column.")
+    
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Dashboard Builder Section (Complete Implementation)
 elif main_section == "🎨 Dashboard Builder":
+    st.markdown('<div class="centered-content">', unsafe_allow_html=True)
     st.markdown('<h2 class="section-header">🎨 Interactive Dashboard Builder</h2>', unsafe_allow_html=True)
     
     if st.session_state.df is None:
@@ -2960,149 +3287,96 @@ elif main_section == "🎨 Dashboard Builder":
         for i, (position, config) in enumerate(chart_configs.items()):
             if config['type'] != "None" and i < len(containers):
                 with containers[i]:
-                    fig = create_advanced_visualization(df, config)
-                    if fig:
-                        st.plotly_chart(fig, use_container_width=True)
-                    else:
-                        st.error(f"Could not generate {config['type']} for {position}")
+                    try:
+                        fig = create_advanced_visualization(df, config)
+                        if fig:
+                            st.plotly_chart(fig, use_container_width=True)
+                        else:
+                            st.error(f"Could not generate {config['type']} for {position}")
+                    except Exception as e:
+                        st.error(f"Error generating {config['type']} for {position}: {str(e)}")
         
-        st.success("Dashboard generated successfully!")
-
-# Templates Section (Complete Implementation)
-elif main_section == "📋 Templates":
-    st.markdown('<h2 class="section-header">📋 Cleaning Templates & Workflows</h2>', unsafe_allow_html=True)
-    
-    template_tab1, template_tab2, template_tab3 = st.tabs(["🏭 Predefined Templates", "💾 My Templates", "➕ Create Template"])
-    
-    with template_tab1:
-        st.markdown("### 🏭 Industry-Specific Templates")
+        st.success("✅ Dashboard generated successfully!")
         
-        predefined_templates = get_predefined_templates()
+        # Dashboard actions
+        st.markdown("### 📱 Dashboard Actions")
+        col1, col2, col3 = st.columns(3)
         
-        for template_name, template_info in predefined_templates.items():
-            with st.expander(f"📊 {template_name}", expanded=False):
-                st.write(f"**Description:** {template_info['description']}")
-                st.write("**Included Steps:**")
-                
-                for i, step in enumerate(template_info['steps'], 1):
-                    step_desc = f"{i}. "
-                    if step['type'] == 'remove_duplicates':
-                        step_desc += "Remove duplicate rows"
-                    elif step['type'] == 'handle_missing':
-                        step_desc += f"Handle missing values in '{step['column']}' using {step['method']}"
-                    elif step['type'] == 'handle_outliers':
-                        step_desc += f"Handle outliers in {step['columns']} using {step['method']}"
-                    elif step['type'] == 'convert_types':
-                        step_desc += f"Convert '{step['column']}' to {step['target_type']}"
-                    elif step['type'] == 'standardize_text':
-                        step_desc += f"Standardize text in {step['columns']} using {step['method']}"
-                    elif step['type'] == 'scaling':
-                        step_desc += f"Apply {step['method']} to {step['columns']}"
-                    
-                    st.write(step_desc)
-                
-                if st.button(f"Apply {template_name}", key=f"apply_{template_name}"):
-                    if st.session_state.df is not None:
-                        st.info(f"Applied {template_name} template - implement execution logic here")
-                    else:
-                        st.warning("Please upload a dataset first!")
-    
-    with template_tab2:
-        st.markdown("### 💾 Your Saved Templates")
+        with col1:
+            if st.button("💾 Save Dashboard", use_container_width=True):
+                # Save dashboard config to session state
+                if 'saved_dashboards' not in st.session_state:
+                    st.session_state.saved_dashboards = {}
+                st.session_state.saved_dashboards[dashboard_name] = st.session_state.dashboard_config
+                st.success(f"Dashboard '{dashboard_name}' saved!")
         
-        if st.session_state.templates:
-            for template_name, template_data in st.session_state.templates.items():
-                st.markdown(f"""
-                    <div class="template-card">
-                        <h4>{template_name}</h4>
-                        <p><strong>Created:</strong> {template_data['created_date'][:10]}</p>
-                        <p><strong>Steps:</strong> {len(template_data['steps'])}</p>
+        with col2:
+            if st.button("📊 View Full Dashboard", use_container_width=True):
+                # Create a dedicated view for the dashboard
+                st.markdown("### 🖥️ Full Dashboard View")
+                st.markdown(f"**Dashboard:** {dashboard_name}")
+                st.markdown(f"**Layout:** {layout_type}")
+                st.markdown(f"**Charts:** {len([c for c in chart_configs.values() if c['type'] != 'None'])}")
+        
+        with col3:
+            # Export dashboard as HTML
+            if st.button("📥 Download Dashboard", use_container_width=True):
+                html_content = f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>{dashboard_name} - Datalix Dashboard</title>
+                    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                    <style>
+                        body {{ font-family: Arial, sans-serif; margin: 20px; background: #f8faff; }}
+                        .header {{ background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; }}
+                        .dashboard-grid {{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 20px 0; }}
+                        .chart-container {{ background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+                        .footer {{ text-align: center; margin-top: 40px; color: #666; }}
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>📊 {dashboard_name}</h1>
+                        <p>Generated by Datalix on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
                     </div>
-                """, unsafe_allow_html=True)
+                    <div class="dashboard-grid">
+                """
                 
-                col1, col2 = st.columns(2)
-                with col1:
-                    if st.button(f"Apply {template_name}", key=f"apply_custom_{template_name}"):
-                        st.info("Template application logic would be implemented here")
-                with col2:
-                    if st.button(f"Delete {template_name}", key=f"delete_{template_name}"):
-                        del st.session_state.templates[template_name]
-                        st.rerun()
-        else:
-            st.info("No saved templates yet. Create one in the 'Create Template' tab!")
+                # Add chart placeholders (actual chart generation would need plotly.js integration)
+                for position, config in chart_configs.items():
+                    if config['type'] != "None":
+                        html_content += f"""
+                        <div class="chart-container">
+                            <h3>{position}: {config['type']}</h3>
+                            <p>Chart: {config.get('x', 'N/A')} vs {config.get('y', 'N/A')}</p>
+                            <div id="chart-{position.replace(' ', '-').lower()}" style="height: 400px;"></div>
+                        </div>
+                        """
+                
+                html_content += f"""
+                    </div>
+                    <div class="footer">
+                        <p> 2025 Datalix - AI-Powered Data Platform</p>
+                    </div>
+                </body>
+                </html>
+                """
+                
+                st.download_button(
+                    label="💾 Download HTML Dashboard",
+                    data=html_content,
+                    file_name=f"dashboard_{dashboard_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html",
+                    mime="text/html",
+                    use_container_width=True
+                )
     
-    with template_tab3:
-        st.markdown("### ➕ Create New Template")
-        
-        new_template_name = st.text_input("Template Name:")
-        new_template_desc = st.text_area("Description:")
-        
-        # Template builder interface
-        st.markdown("#### 🔧 Build Template Steps")
-        
-        if 'template_steps' not in st.session_state:
-            st.session_state.template_steps = []
-        
-        # Add new step
-        step_type = st.selectbox(
-            "Add step type:",
-            ["Remove Duplicates", "Handle Missing Values", "Remove Outliers", "Data Type Conversion", "Text Cleaning", "Scaling"]
-        )
-        
-        step_config = {}
-        
-        if step_type == "Handle Missing Values":
-            if st.session_state.df is not None:
-                df = st.session_state.df
-                columns = df.columns.tolist()
-            else:
-                columns = []
-            step_config['column'] = st.selectbox("Column:", columns)
-            step_config['method'] = st.selectbox("Method:", [
-                "Fill with mean", "Fill with median", "Fill with mode", 
-                "Remove rows", "Forward fill", "Backward fill"
-            ])
-        
-        elif step_type == "Remove Outliers":
-            if st.session_state.df is not None:
-                df = st.session_state.df
-                numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-            else:
-                numeric_cols = []
-            step_config['columns'] = st.multiselect("Columns:", numeric_cols)
-            step_config['method'] = st.selectbox("Method:", ["IQR", "Z-score", "Isolation Forest"])
-        
-        if st.button("➕ Add Step"):
-            step = {
-                'type': step_type,
-                'config': step_config,
-                'order': len(st.session_state.template_steps) + 1
-            }
-            st.session_state.template_steps.append(step)
-            st.rerun()
-        
-        # Show current steps
-        if st.session_state.template_steps:
-            st.markdown("#### 📝 Current Template Steps")
-            for i, step in enumerate(st.session_state.template_steps):
-                col1, col2 = st.columns([4, 1])
-                with col1:
-                    st.write(f"{i+1}. {step['type']} - {step['config']}")
-                with col2:
-                    if st.button("🗑️", key=f"delete_step_{i}"):
-                        st.session_state.template_steps.pop(i)
-                        st.rerun()
-        
-        # Save template
-        if new_template_name and st.session_state.template_steps:
-            if st.button("💾 Save Template"):
-                save_cleaning_template(new_template_name, st.session_state.template_steps.copy())
-                st.session_state.template_steps = []
-                st.success(f"Template '{new_template_name}' saved successfully!")
-                st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 # Settings Section (New Implementation)
 elif main_section == "⚙️ Settings":
+    st.markdown('<div class="centered-content">', unsafe_allow_html=True)
     st.markdown('<h2 class="section-header">⚙️ Platform Settings</h2>', unsafe_allow_html=True)
     
     settings_tab1, settings_tab2, settings_tab3 = st.tabs(["🎛️ General", "🎨 Appearance", "📊 Data Processing"])
@@ -3204,8 +3478,8 @@ elif main_section == "⚙️ Settings":
             
             st.success("Processing settings saved!")
 
-# Enhanced Footer with Export Options
-if st.session_state.df is not None:
+# Enhanced Footer with Export functionality moved to separate Export Data page
+elif main_section == "📊 Export Data":
     st.markdown("---")
     st.markdown("### 📤 Export Options")
     
@@ -3829,18 +4103,38 @@ def setup_collaboration_features():
 
 # Add collaboration to main section (insert after Settings)
 if main_section == "👥 Collaboration":
+    st.markdown('<div class="centered-content">', unsafe_allow_html=True)
     st.markdown('<h2 class="section-header">👥 Team Collaboration</h2>', unsafe_allow_html=True)
     setup_collaboration_features()
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Pipeline Builder Section
 elif main_section == "🔧 Pipeline Builder":
+    st.markdown('<div class="centered-content">', unsafe_allow_html=True)
     st.markdown('<h2 class="section-header">🔧 Advanced Pipeline Builder</h2>', unsafe_allow_html=True)
+    
+    # Add clear explanation about Pipeline Builder
+    st.markdown("""
+    <div class="feature-card" style="margin-bottom: 2rem;">
+        <h4 style="color: #4f46e5; margin-bottom: 1rem;">💡 What is Pipeline Builder?</h4>
+        <p style="color: #6b7280; margin-bottom: 1rem; line-height: 1.6;">
+            The Pipeline Builder allows you to create automated, reusable data processing workflows. 
+            You can chain multiple data cleaning and transformation steps together, save them as templates, 
+            and apply them to new datasets with a single click.
+        </p>
+        <p style="color: #6b7280; margin: 0; line-height: 1.6;">
+            <strong>Key Benefits:</strong> Consistency across projects, time-saving automation, 
+            reproducible data processing, and easy sharing of workflows with team members.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     if st.session_state.df is None:
         st.warning("Please upload a dataset first!")
         st.stop()
     
     create_pipeline_builder()
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Enhanced Data Quality Monitoring (Phase 2)
 def create_quality_monitoring_dashboard():
@@ -4975,6 +5269,7 @@ if 'main_section' not in locals():
 
 # Add new sections to main application
 if main_section == "🛠️ Feature Engineering":
+    st.markdown('<div class="centered-content">', unsafe_allow_html=True)
     st.markdown('<h2 class="section-header">🛠️ Advanced Feature Engineering</h2>', unsafe_allow_html=True)
     
     if st.session_state.df is None:
@@ -4982,8 +5277,10 @@ if main_section == "🛠️ Feature Engineering":
         st.stop()
     
     feature_engineering_advanced(st.session_state.df)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 elif main_section == "🔬 Statistical Analysis":
+    st.markdown('<div class="centered-content">', unsafe_allow_html=True)
     st.markdown('<h2 class="section-header">🔬 Advanced Statistical Analysis</h2>', unsafe_allow_html=True)
     
     if st.session_state.df is None:
@@ -4991,54 +5288,120 @@ elif main_section == "🔬 Statistical Analysis":
         st.stop()
     
     advanced_statistical_analysis(st.session_state.df)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-elif main_section == "🤖 AI Recommendations":
-    st.markdown('<h2 class="section-header">🤖 AI-Powered Recommendations</h2>', unsafe_allow_html=True)
+# AI Recommendations functionality is now merged with AI Insights section
+
+elif main_section == "📤 Export Data":
+    st.markdown('<div class="centered-content">', unsafe_allow_html=True)
+    st.markdown('<h2 class="section-header">📤 Export Cleaned Data</h2>', unsafe_allow_html=True)
     
     if st.session_state.df is None:
-        st.warning("Please upload a dataset first!")
+        st.warning("⚠️ Please upload and clean a dataset first!")
+        st.markdown("</div>", unsafe_allow_html=True)
         st.stop()
     
-    ai_recommendations_engine(st.session_state.df)
-
-# Enhanced export section in footer
-if st.session_state.df is not None:
-    st.markdown("---")
-    advanced_export_options(st.session_state.df)
+    st.markdown("### 📊 Export Your Cleaned Dataset")
+    st.info("💡 Export your cleaned and processed data in various formats for further analysis or sharing.")
+    
+    # Show data preview
+    with st.expander("📋 Data Preview", expanded=True):
+        st.dataframe(st.session_state.df.head(10), use_container_width=True)
+        st.markdown(f"**Dataset Shape:** {st.session_state.df.shape[0]:,} rows × {st.session_state.df.shape[1]} columns")
+    
+    # Export options
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### 📁 Export Formats")
+        export_format = st.selectbox(
+            "Choose export format:",
+            ["CSV", "Excel (XLSX)", "JSON", "Parquet"]
+        )
+        
+        include_index = st.checkbox("Include row index", value=False)
+        
+    with col2:
+        st.markdown("#### ⚙️ Export Options")
+        if export_format == "CSV":
+            separator = st.selectbox("CSV Separator:", [",", ";", "\t", "|"])
+            encoding = st.selectbox("Encoding:", ["utf-8", "latin-1", "ascii"])
+        elif export_format == "Excel (XLSX)":
+            sheet_name = st.text_input("Sheet Name:", value="CleanedData")
+    
+    # Export button
+    if st.button("📥 Download Cleaned Data", use_container_width=True):
+        try:
+            if export_format == "CSV":
+                csv_data = st.session_state.df.to_csv(index=include_index, sep=separator, encoding=encoding)
+                st.download_button(
+                    label="💾 Download CSV",
+                    data=csv_data,
+                    file_name=f"cleaned_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+            elif export_format == "Excel (XLSX)":
+                buffer = io.BytesIO()
+                with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                    st.session_state.df.to_excel(writer, sheet_name=sheet_name, index=include_index)
+                buffer.seek(0)
+                st.download_button(
+                    label="💾 Download Excel",
+                    data=buffer,
+                    file_name=f"cleaned_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
+                )
+            elif export_format == "JSON":
+                json_data = st.session_state.df.to_json(orient='records', indent=2)
+                st.download_button(
+                    label="💾 Download JSON",
+                    data=json_data,
+                    file_name=f"cleaned_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                    mime="application/json",
+                    use_container_width=True
+                )
+            elif export_format == "Parquet":
+                buffer = io.BytesIO()
+                st.session_state.df.to_parquet(buffer, index=include_index)
+                buffer.seek(0)
+                st.download_button(
+                    label="💾 Download Parquet",
+                    data=buffer,
+                    file_name=f"cleaned_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.parquet",
+                    mime="application/octet-stream",
+                    use_container_width=True
+                )
+            st.success("✅ Export prepared successfully!")
+        except Exception as e:
+            st.error(f"❌ Export failed: {str(e)}")
+    
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Initialize mobile optimization
 mobile_optimized_interface()
 
-# Footer - ONLY SHOW ON HOME PAGE
-if main_section == "🏠 Home":
-    st.markdown("---")
-    st.markdown("### 📊 Datalix")
-    st.markdown("**Complete Implementation with AI-Powered Features**")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown("**Features:**")
-        st.markdown("• AI-Powered Data Cleaning")
-        st.markdown("• Advanced Analytics")
-        st.markdown("• Interactive Visualizations")
-    
-    with col2:
-        st.markdown("**Built with:**")
-        st.markdown("• Streamlit")
-        st.markdown("• Pandas")
-        st.markdown("• Plotly")
-        st.markdown("• Scikit-learn")
-    
-    with col3:
-        st.markdown("**Capabilities:**")
-        st.markdown("• Real-time Processing")
-        st.markdown("• Interactive Dashboards")
-        st.markdown("• Advanced ML Tools")
-    
-    st.markdown("---")
-    st.markdown("*© 2025 Datalix*")
-else:
-    # Simple footer for other pages
-    st.markdown("---")
-    st.markdown("*© 2025 Datalix*")
+# Enhanced Footer
+st.markdown("---")
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("**Features**")
+    st.write("• AI-Powered Data Cleaning")
+    st.write("• Advanced Analytics")
+    st.write("• Interactive Visualizations")
+
+with col2:
+    st.markdown("**Built with**")
+    st.write("• Streamlit")
+    st.write("• Pandas & Plotly")
+    st.write("• Scikit-learn")
+
+with col3:
+    st.markdown("**Capabilities**")
+    st.write("• Real-time Processing")
+    st.write("• Interactive Dashboards")
+    st.write("• Advanced ML Tools")
+
+st.markdown("<div style='text-align: center; margin-top: 2rem; color: #9ca3af;'>© 2025 Datalix - AI-Powered Data Platform</div>", unsafe_allow_html=True)
