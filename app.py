@@ -41,7 +41,8 @@ session_mgr = SessionManager()
 # Auto-scroll to top function
 def scroll_to_top():
     """Scroll to top of page using JavaScript"""
-    st.components.v1.html(
+    import streamlit.components.v1 as components
+    components.html(
         """
         <script>
             window.parent.document.querySelector('section.main').scrollTo(0, 0);
@@ -1487,7 +1488,12 @@ elif selected_page == "Export":
             else:
                 export_encoding = "UTF-8"
         
-        # Additional options
+        # Additional options - Initialize default values
+        separator = ","
+        include_index = False
+        sheet_name = "Sheet1"
+        orient = "records"
+        
         if export_format == "CSV":
             col1, col2 = st.columns(2)
             
@@ -1518,8 +1524,10 @@ elif selected_page == "Export":
         
         if st.button("📥 Download Data", type="primary", use_container_width=True):
             try:
-                # Prepare file
+                # Prepare file - Initialize file_ext and mime_type
                 buffer = io.BytesIO()
+                file_ext = "csv"
+                mime_type = "text/csv"
                 
                 if export_format == "CSV":
                     csv_data = df.to_csv(

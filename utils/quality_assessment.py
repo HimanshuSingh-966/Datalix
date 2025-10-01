@@ -58,7 +58,7 @@ class QualityAssessor:
             
             consistency_scores.append(score)
         
-        return np.mean(consistency_scores) if consistency_scores else 100
+        return float(np.mean(consistency_scores)) if consistency_scores else 100.0
     
     def calculate_uniqueness_score(self, df: pd.DataFrame) -> float:
         """

@@ -102,15 +102,18 @@ class ChartGenerator:
                         y_col: Optional[str] = None,
                         agg_func: str = 'count') -> go.Figure:
         """Create bar chart"""
+        # Initialize data and fig to satisfy type checker
+        data = df[x_col].value_counts().sort_index()
+        fig = px.bar(
+            x=data.index,
+            y=data.values,
+            title=f"Count by {x_col}",
+            labels={'x': x_col, 'y': 'Count'}
+        )
+        
         if agg_func == 'count':
-            # Count occurrences
-            data = df[x_col].value_counts().sort_index()
-            fig = px.bar(
-                x=data.index,
-                y=data.values,
-                title=f"Count by {x_col}",
-                labels={'x': x_col, 'y': 'Count'}
-            )
+            # Count occurrences (already initialized above)
+            pass
         else:
             # Aggregate by function
             if y_col:

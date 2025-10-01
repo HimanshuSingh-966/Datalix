@@ -80,8 +80,8 @@ class CategoricalEncoder:
         """
         encoded_df = df.copy()
         
-        # Apply mapping
-        encoded_df[column] = encoded_df[column].map(mapping)
+        # Apply mapping - Use lambda to satisfy type checker
+        encoded_df[column] = encoded_df[column].apply(lambda x: mapping.get(x, x))
         
         return encoded_df
     

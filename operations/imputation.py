@@ -40,13 +40,14 @@ class MissingValueImputer:
         elif method == "Mode":
             mode_value = imputed_df[column].mode()
             if len(mode_value) > 0:
-                imputed_df[column] = imputed_df[column].fillna(mode_value[0])
+                fill_value = mode_value.iloc[0] if hasattr(mode_value, 'iloc') else mode_value[0]
+                imputed_df[column] = imputed_df[column].fillna(fill_value)
         
         elif method == "Forward Fill":
-            imputed_df[column] = imputed_df[column].fillna(method='ffill')
+            imputed_df[column] = imputed_df[column].ffill()
         
         elif method == "Backward Fill":
-            imputed_df[column] = imputed_df[column].fillna(method='bfill')
+            imputed_df[column] = imputed_df[column].bfill()
         
         elif method == "KNN Imputation (ML)":
             n_neighbors = kwargs.get('n_neighbors', 5)
