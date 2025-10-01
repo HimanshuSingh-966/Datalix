@@ -7,11 +7,15 @@
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge)
 
+### 🌐 [**Try Live Demo →**](https://datalix-new.streamlit.app)
+
 </div>
 
 ## Enterprise-Grade Data Cleaning with ML Intelligence
 
 > A comprehensive, ML-powered data cleaning and preprocessing platform built with Streamlit. Transform messy datasets into analysis-ready data with advanced ML algorithms, database connectivity, batch processing, and automated workflows. Perfect for data scientists, analysts, and engineers who demand professional-grade data quality.
+
+**🎯 [Launch Application](https://datalix-new.streamlit.app) | [View Documentation](#-quick-start) | [Report Issues](https://github.com/HimanshuSingh-966/datalix/issues)**
 
 ## 🌟 Key Features
 
@@ -99,7 +103,11 @@
 
 ## 🚀 Quick Start
 
-### Installation
+### Online Access
+
+**🌐 Visit [datalix-new.streamlit.app](https://datalix-new.streamlit.app)** to start using Datalix immediately—no installation required!
+
+### Local Installation
 
 1. **Clone the repository**:
 ```bash
@@ -524,9 +532,11 @@ streamlit run app.py --server.port 5000 --server.runOnSave true
 - **Sample Projects**: Example workflows and templates included
 
 ### Getting Help
+- **Live Demo**: [datalix-new.streamlit.app](https://datalix-new.streamlit.app)
 - **GitHub Issues**: [Report bugs and request features](https://github.com/HimanshuSingh-966/datalix/issues)
 - **Discussions**: [Ask questions and share ideas](https://github.com/HimanshuSingh-966/datalix/discussions)
 - **Email Support**: himanshu.singh.2kfive@gmail.com
+
 ### Community Resources
 - Share your templates and pipelines
 - Contribute sample datasets
@@ -566,6 +576,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Quick Links
 
+- [🌐 Live Demo](https://datalix-new.streamlit.app)
 - [🚀 Quick Start](#quick-start)
 - [📚 How It Works](#how-it-works)
 - [🎯 Use Cases](#use-cases)
@@ -582,6 +593,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Datalix v2.0.0** | **Enterprise-Grade Data Cleaning** | **Built with Streamlit**
 
-[⭐ Star on GitHub](https://github.com/yourusername/datalix) | [🐛 Report Bug](https://github.com/yourusername/datalix/issues) | [💡 Request Feature](https://github.com/yourusername/datalix/issues)
+[🌐 Live Demo](https://datalix-new.streamlit.app) | [⭐ Star on GitHub](https://github.com/HimanshuSingh-966/datalix) | [🐛 Report Bug](https://github.com/HimanshuSingh-966/datalix/issues) | [💡 Request Feature](https://github.com/HimanshuSingh-966/datalix/issues)
 
 </div>
