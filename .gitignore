@@ -66,3 +66,13 @@ logs/
 
 # Cache
 .cache/
+
+replit.md
+
+.replit
+uv.lock
+
+pyproject.toml
+.local/
+attached_assets/
+
