@@ -103,7 +103,7 @@
 
 1. **Clone the repository**:
 ```bash
-git clone https://github.com/yourusername/datalix.git
+git clone https://github.com/HimanshuSingh-966/datalix.git
 cd datalix
 ```
 
@@ -463,7 +463,7 @@ We welcome contributions to Datalix! Here's how you can help:
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/datalix.git
+git clone https://github.com/HimanshuSingh-966/datalix.git
 cd datalix
 
 # Install dependencies
@@ -524,10 +524,9 @@ streamlit run app.py --server.port 5000 --server.runOnSave true
 - **Sample Projects**: Example workflows and templates included
 
 ### Getting Help
-- **GitHub Issues**: [Report bugs and request features](https://github.com/yourusername/datalix/issues)
-- **Discussions**: [Ask questions and share ideas](https://github.com/yourusername/datalix/discussions)
-- **Email Support**: support@datalix.example.com
-
+- **GitHub Issues**: [Report bugs and request features](https://github.com/HimanshuSingh-966/datalix/issues)
+- **Discussions**: [Ask questions and share ideas](https://github.com/HimanshuSingh-966/datalix/discussions)
+- **Email Support**: himanshu.singh.2kfive@gmail.com
 ### Community Resources
 - Share your templates and pipelines
 - Contribute sample datasets
