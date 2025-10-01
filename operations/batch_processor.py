@@ -6,7 +6,7 @@ Process multiple files with automated cleaning templates
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from typing import List, Dict, Optional, Callable
+from typing import List, Dict, Optional, Callable, Tuple
 import json
 from datetime import datetime
 import io
@@ -94,8 +94,8 @@ class BatchProcessor:
         from operations.imputation import MissingValueImputer
         from operations.encoding import CategoricalEncoder
         
-        cleaned_df = df.copy()
-        operations_log = []
+        cleaned_df: pd.DataFrame = df.copy()
+        operations_log: List[str] = []
         
         cleaner = DataCleaner()
         imputer = MissingValueImputer()
@@ -178,8 +178,11 @@ class BatchProcessor:
                     method = params.get('method', 'iqr')
                     if column and column in cleaned_df.columns:
                         outliers = cleaner.detect_outliers(cleaned_df, column, method=method, **params)
-                        cleaned_df = cleaned_df[~outliers]
-                        operations_log.append(f"Removed {outliers.sum()} outliers from {column}")
+                        outlier_count = int(outliers.sum())
+                        filtered_df = cleaned_df[~outliers]
+                        assert isinstance(filtered_df, pd.DataFrame)
+                        cleaned_df = filtered_df
+                        operations_log.append(f"Removed {outlier_count} outliers from {column}")
                 
                 elif operation == 'convert_dtype':
                     column = params.get('column')

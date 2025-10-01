@@ -18,10 +18,17 @@ from utils.encoding_detector import EncodingDetector
 from operations.cleaning import DataCleaner
 from operations.encoding import CategoricalEncoder
 from operations.imputation import MissingValueImputer
+from operations.ml_cleaning import MLDataCleaner
+from operations.batch_processor import BatchProcessor
+from operations.workflow_pipeline import WorkflowManager
 
 # Import visualization modules
 from visualization.charts import ChartGenerator
 from visualization.dashboard import DashboardBuilder
+from visualization.dashboard_builder_advanced import DashboardManager
+
+# Import database connector
+from utils.database_connector import DatabaseConnector
 
 # Import core modules
 from core.session_manager import SessionManager
@@ -64,6 +71,16 @@ if 'current_page' not in st.session_state:
     st.session_state.current_page = "Home"
 if 'quality_score' not in st.session_state:
     st.session_state.quality_score = None
+if 'db_connector' not in st.session_state:
+    st.session_state.db_connector = DatabaseConnector()
+if 'batch_processor' not in st.session_state:
+    st.session_state.batch_processor = BatchProcessor()
+if 'workflow_manager' not in st.session_state:
+    st.session_state.workflow_manager = WorkflowManager()
+if 'dashboard_manager' not in st.session_state:
+    st.session_state.dashboard_manager = DashboardManager()
+if 'ml_cleaner' not in st.session_state:
+    st.session_state.ml_cleaner = MLDataCleaner()
 
 # Sidebar navigation
 with st.sidebar:
@@ -74,13 +91,18 @@ with st.sidebar:
     pages = {
         "Home": "🏠",
         "Data Upload": "📁",
+        "Database": "🗄️",
         "Data Preview": "👁️",
         "Data Profiling": "📊",
         "Data Cleaning": "🧹",
+        "ML Cleaning": "🤖",
         "Missing Values": "❓",
         "Outlier Detection": "🎯",
         "Encoding": "🔤",
+        "Batch Processing": "📦",
+        "Workflows": "🔄",
         "Visualization": "📈",
+        "Dashboard Builder": "📊",
         "Export": "💾",
         "Help": "❓"
     }
@@ -1433,6 +1455,586 @@ elif selected_page == "Visualization":
                     st.plotly_chart(fig, use_container_width=True)
             else:
                 st.info("Need at least 2 numeric columns")
+
+elif selected_page == "Database":
+    scroll_to_top()
+    st.title("🗄️ Database Connectivity")
+    
+    db_conn = st.session_state.db_connector
+    
+    db_tabs = st.tabs(["📥 Import from Database", "📤 Export to Database", "🔌 Connection"])
+    
+    with db_tabs[2]:
+        st.subheader("Database Connection")
+        
+        if db_conn.is_connected():
+            conn_info = db_conn.get_connection_info()
+            st.success(f"✓ Connected to {conn_info.get('db_type', 'database')}: {conn_info.get('database', '')}")
+            
+            if st.button("Disconnect"):
+                db_conn.disconnect()
+                st.success("Disconnected from database")
+                st.rerun()
+        else:
+            st.info("Not connected to any database")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                db_type = st.selectbox("Database Type", ["PostgreSQL", "MySQL"])
+                host = st.text_input("Host", value="localhost")
+                database = st.text_input("Database Name")
+            
+            with col2:
+                port = st.number_input("Port", value=5432 if db_type == "PostgreSQL" else 3306)
+                username = st.text_input("Username")
+                password = st.text_input("Password", type="password")
+            
+            if st.button("Connect", type="primary"):
+                with st.spinner("Connecting..."):
+                    success, message = db_conn.connect(
+                        db_type.lower(),
+                        host,
+                        port,
+                        database,
+                        username,
+                        password
+                    )
+                    if success:
+                        st.success(message)
+                        st.rerun()
+                    else:
+                        st.error(message)
+    
+    with db_tabs[0]:
+        st.subheader("Import Data from Database")
+        
+        if not db_conn.is_connected():
+            st.warning("Please connect to a database first")
+        else:
+            tables = db_conn.list_tables()
+            
+            if tables:
+                selected_table = st.selectbox("Select Table", tables)
+                
+                if selected_table:
+                    table_info = db_conn.get_table_info(selected_table)
+                    if table_info:
+                        st.write(f"**Columns:** {', '.join(table_info.get('columns', []))}")
+                        st.write(f"**Total Columns:** {table_info.get('total_columns', 0)}")
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        limit_rows = st.checkbox("Limit rows")
+                        row_limit = None
+                        if limit_rows:
+                            row_limit = st.number_input("Maximum rows", min_value=1, value=1000)
+                    
+                    with col2:
+                        use_custom_query = st.checkbox("Use custom SQL query")
+                    
+                    custom_query = None
+                    if use_custom_query:
+                        custom_query = st.text_area("SQL Query", f"SELECT * FROM {selected_table}")
+                    
+                    if st.button("Import Data", type="primary"):
+                        with st.spinner("Importing data..."):
+                            df, message = db_conn.import_table(selected_table, row_limit, custom_query)
+                            if df is not None:
+                                st.session_state.data = df
+                                st.session_state.original_data = df.copy()
+                                st.success(message)
+                                st.rerun()
+                            else:
+                                st.error(message)
+            else:
+                st.info("No tables found in the database")
+    
+    with db_tabs[1]:
+        st.subheader("Export Data to Database")
+        
+        if st.session_state.data is None:
+            st.warning("No data loaded to export")
+        elif not db_conn.is_connected():
+            st.warning("Please connect to a database first")
+        else:
+            df = st.session_state.data
+            
+            table_name = st.text_input("Table Name", value="exported_data")
+            
+            if_exists = st.radio(
+                "If table exists:",
+                ["Replace", "Append", "Fail"],
+                help="Choose how to handle existing table"
+            )
+            
+            if st.button("Export to Database", type="primary"):
+                with st.spinner("Exporting data..."):
+                    success, message = db_conn.export_table(
+                        df,
+                        table_name,
+                        if_exists.lower()
+                    )
+                    if success:
+                        st.success(message)
+                    else:
+                        st.error(message)
+
+elif selected_page == "ML Cleaning":
+    scroll_to_top()
+    st.title("🤖 ML-Based Data Cleaning")
+    
+    if st.session_state.data is None:
+        st.warning("No data loaded. Please upload a file first.")
+    else:
+        df = st.session_state.data
+        ml_cleaner = st.session_state.ml_cleaner
+        
+        ml_tabs = st.tabs([
+            "🔍 Anomaly Detection",
+            "📋 Smart Suggestions",
+            "🎯 Pattern Analysis",
+            "📊 Dimensionality Analysis"
+        ])
+        
+        with ml_tabs[0]:
+            st.subheader("Multivariate Anomaly Detection")
+            
+            numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+            
+            if not numeric_cols:
+                st.info("No numeric columns available for anomaly detection")
+            else:
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    contamination = st.slider(
+                        "Contamination (expected % of anomalies)",
+                        0.01, 0.5, 0.1, 0.01
+                    )
+                
+                with col2:
+                    use_selected = st.checkbox("Select specific columns")
+                    selected_cols = None
+                    if use_selected:
+                        selected_cols = st.multiselect("Columns", numeric_cols)
+                
+                if st.button("Detect Anomalies", type="primary"):
+                    with st.spinner("Detecting anomalies..."):
+                        result_df, anomaly_info = ml_cleaner.detect_anomalies_multivariate(
+                            df, contamination, selected_cols
+                        )
+                        
+                        st.success(f"✓ Detected {anomaly_info['total_anomalies']} anomalies ({anomaly_info['anomaly_percentage']:.2f}%)")
+                        
+                        st.subheader("Anomaly Distribution")
+                        anomaly_counts = result_df['anomaly_label'].value_counts()
+                        st.bar_chart(anomaly_counts)
+                        
+                        st.subheader("Detected Anomalies")
+                        anomalies_df = result_df[result_df['anomaly_label'] == -1]
+                        st.dataframe(anomalies_df.head(20), use_container_width=True)
+                        
+                        if st.button("Remove Anomalies from Dataset"):
+                            st.session_state.history.add_operation("Remove ML Anomalies", df.copy())
+                            filtered_df = result_df[result_df['anomaly_label'] != -1].drop(columns=['anomaly_label', 'anomaly_score'])
+                            assert isinstance(filtered_df, pd.DataFrame)
+                            st.session_state.data = filtered_df
+                            st.success(f"Removed {anomaly_info['total_anomalies']} anomalies")
+                            st.rerun()
+        
+        with ml_tabs[1]:
+            st.subheader("Smart Data Cleaning Suggestions")
+            
+            if st.button("Generate Suggestions", type="primary"):
+                with st.spinner("Analyzing data..."):
+                    suggestions = ml_cleaner.generate_smart_suggestions(df)
+                    
+                    if not suggestions:
+                        st.success("✓ No issues found! Your data looks good.")
+                    else:
+                        st.write(f"Found {len(suggestions)} suggestions:")
+                        
+                        for i, suggestion in enumerate(suggestions):
+                            priority = suggestion['priority']
+                            color = "🔴" if priority == "High" else "🟡" if priority == "Medium" else "🟢"
+                            
+                            with st.expander(f"{color} {priority} - {suggestion['type']}: {suggestion['column']}"):
+                                st.write(f"**Issue:** {suggestion['issue']}")
+                                st.write(f"**Suggestion:** {suggestion['suggestion']}")
+                                
+                                if st.button(f"Apply Fix #{i+1}", key=f"fix_{i}"):
+                                    with st.spinner("Applying fix..."):
+                                        st.session_state.history.add_operation(f"ML Fix: {suggestion['type']}", df.copy())
+                                        fixed_df = ml_cleaner.auto_fix_suggestions(df, suggestion)
+                                        st.session_state.data = fixed_df
+                                        st.success("✓ Fix applied!")
+                                        st.rerun()
+        
+        with ml_tabs[2]:
+            st.subheader("Pattern Analysis")
+            
+            text_cols = df.select_dtypes(include=['object']).columns.tolist()
+            
+            if not text_cols:
+                st.info("No text columns available for pattern analysis")
+            else:
+                selected_col = st.selectbox("Select column to analyze", text_cols)
+                
+                if st.button("Analyze Patterns", type="primary"):
+                    with st.spinner("Analyzing patterns..."):
+                        pattern_info = ml_cleaner.detect_pattern_anomalies(df, selected_col)
+                        
+                        if 'error' in pattern_info:
+                            st.error(pattern_info['error'])
+                        else:
+                            st.subheader("Pattern Analysis Results")
+                            
+                            col1, col2 = st.columns(2)
+                            
+                            with col1:
+                                st.metric("Total Values", pattern_info['total_values'])
+                                st.metric("Unique Values", pattern_info['unique_values'])
+                            
+                            with col2:
+                                st.metric("Pattern Consistency", f"{pattern_info['pattern_consistency_score']:.1f}%")
+                            
+                            if pattern_info['pattern_matches']:
+                                st.subheader("Detected Patterns")
+                                for pattern_name, info in pattern_info['pattern_matches'].items():
+                                    st.write(f"**{pattern_name.title()}:** {info['count']} matches ({info['percentage']:.1f}%)")
+                            
+                            if pattern_info['issues']:
+                                st.subheader("⚠️ Issues Found")
+                                for issue in pattern_info['issues']:
+                                    st.warning(issue)
+        
+        with ml_tabs[3]:
+            st.subheader("Dimensionality Analysis (PCA)")
+            
+            numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+            
+            if len(numeric_cols) < 2:
+                st.info("Need at least 2 numeric columns for PCA")
+            else:
+                n_components = st.slider("Number of Components", 2, min(10, len(numeric_cols)), 2)
+                
+                if st.button("Perform PCA", type="primary"):
+                    with st.spinner("Performing PCA..."):
+                        pca_df, pca_info = ml_cleaner.dimensionality_analysis(df, n_components)
+                        
+                        st.subheader("PCA Results")
+                        
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            st.write("**Explained Variance Ratio:**")
+                            for i, var in enumerate(pca_info['explained_variance_ratio']):
+                                st.write(f"PC{i+1}: {var*100:.2f}%")
+                        
+                        with col2:
+                            st.write("**Cumulative Variance:**")
+                            for i, var in enumerate(pca_info['cumulative_variance']):
+                                st.write(f"PC{i+1}: {var*100:.2f}%")
+                        
+                        st.subheader("PCA Components")
+                        st.dataframe(pca_df.head(10), use_container_width=True)
+
+elif selected_page == "Batch Processing":
+    scroll_to_top()
+    st.title("📦 Batch Processing")
+    
+    batch_processor = st.session_state.batch_processor
+    
+    batch_tabs = st.tabs(["📁 Process Files", "📋 Templates", "📊 Results"])
+    
+    with batch_tabs[0]:
+        st.subheader("Upload Multiple Files")
+        
+        uploaded_files = st.file_uploader(
+            "Upload files (CSV, Excel, JSON, Parquet)",
+            type=['csv', 'xlsx', 'xls', 'json', 'parquet'],
+            accept_multiple_files=True
+        )
+        
+        if uploaded_files:
+            st.write(f"**{len(uploaded_files)} files uploaded**")
+            
+            use_template = st.checkbox("Apply cleaning template")
+            selected_template = None
+            
+            if use_template:
+                predefined = batch_processor.get_predefined_templates()
+                template_names = list(predefined.keys())
+                selected_name = st.selectbox("Select template", template_names)
+                selected_template = predefined[selected_name]
+                
+                st.info(f"**Template:** {selected_template.name} - {selected_template.description}")
+            
+            output_format = st.selectbox("Output Format", ["csv", "excel", "json", "parquet"])
+            
+            if st.button("Process All Files", type="primary"):
+                with st.spinner(f"Processing {len(uploaded_files)} files..."):
+                    results = batch_processor.process_files(
+                        uploaded_files,
+                        selected_template,
+                        output_format
+                    )
+                    
+                    st.success(f"✓ Processed {len(results)} files")
+                    
+                    for result in results:
+                        if result['status'] == 'success':
+                            st.success(f"✓ {result['filename']}: {result['rows_after']} rows, {result['columns_after']} columns")
+                        else:
+                            st.error(f"✗ {result['filename']}: {', '.join(result['errors'])}")
+    
+    with batch_tabs[1]:
+        st.subheader("Cleaning Templates")
+        
+        predefined = batch_processor.get_predefined_templates()
+        
+        for name, template in predefined.items():
+            with st.expander(f"📋 {template.name}"):
+                st.write(f"**Description:** {template.description}")
+                st.write(f"**Steps:** {len(template.steps)}")
+                for step in template.steps:
+                    st.write(f"- {step['operation']}")
+
+elif selected_page == "Workflows":
+    scroll_to_top()
+    st.title("🔄 Data Transformation Workflows")
+    
+    workflow_mgr = st.session_state.workflow_manager
+    
+    workflow_tabs = st.tabs(["📝 Create Pipeline", "📋 My Pipelines", "▶️ Execute Pipeline"])
+    
+    with workflow_tabs[0]:
+        st.subheader("Create New Pipeline")
+        
+        pipeline_name = st.text_input("Pipeline Name")
+        pipeline_desc = st.text_area("Description")
+        
+        if st.button("Create Pipeline"):
+            if pipeline_name:
+                pipeline = workflow_mgr.create_pipeline(pipeline_name, pipeline_desc)
+                st.success(f"✓ Created pipeline: {pipeline_name}")
+                st.session_state.current_pipeline = pipeline.pipeline_id
+                st.rerun()
+            else:
+                st.error("Please enter a pipeline name")
+        
+        if hasattr(st.session_state, 'current_pipeline') and st.session_state.current_pipeline:
+            pipeline = workflow_mgr.get_pipeline(st.session_state.current_pipeline)
+            if pipeline:
+                st.markdown("---")
+                st.subheader(f"Pipeline: {pipeline.name}")
+                
+                operation_type = st.selectbox(
+                    "Operation Type",
+                    ["remove_duplicates", "drop_columns", "impute", "encode", "detect_outliers",
+                     "remove_outliers", "ml_anomaly_detection", "auto_clean", "filter_rows", "transform_column"]
+                )
+                
+                step_name = st.text_input("Step Name", value=operation_type.replace("_", " ").title())
+                
+                params = {}
+                if operation_type in ["drop_columns", "impute", "encode"]:
+                    params['column'] = st.text_input("Column Name")
+                
+                if st.button("Add Step"):
+                    pipeline.add_step(step_name, operation_type, params)
+                    st.success(f"✓ Added step: {step_name}")
+                    st.rerun()
+                
+                if pipeline.steps:
+                    st.subheader("Pipeline Steps")
+                    for i, step in enumerate(pipeline.steps):
+                        col1, col2, col3 = st.columns([3, 1, 1])
+                        with col1:
+                            st.write(f"{i+1}. {step.name} ({step.operation})")
+                        with col2:
+                            if st.button("Remove", key=f"remove_{step.step_id}"):
+                                pipeline.remove_step(step.step_id)
+                                st.rerun()
+    
+    with workflow_tabs[1]:
+        st.subheader("Saved Pipelines")
+        
+        pipelines = workflow_mgr.list_pipelines()
+        
+        if not pipelines:
+            st.info("No pipelines created yet")
+        else:
+            for p in pipelines:
+                with st.expander(f"🔄 {p['name']}"):
+                    st.write(f"**Description:** {p['description']}")
+                    st.write(f"**Steps:** {p['steps_count']}")
+                    st.write(f"**Created:** {p['created']}")
+                    
+                    if st.button(f"Select Pipeline", key=f"select_{p['pipeline_id']}"):
+                        st.session_state.current_pipeline = p['pipeline_id']
+                        st.rerun()
+    
+    with workflow_tabs[2]:
+        st.subheader("Execute Pipeline")
+        
+        if st.session_state.data is None:
+            st.warning("No data loaded")
+        elif not hasattr(st.session_state, 'current_pipeline') or not st.session_state.current_pipeline:
+            st.info("No pipeline selected")
+        else:
+            pipeline = workflow_mgr.get_pipeline(st.session_state.current_pipeline)
+            if pipeline:
+                st.write(f"**Pipeline:** {pipeline.name}")
+                st.write(f"**Steps:** {len(pipeline.steps)}")
+                
+                if st.button("Execute Pipeline", type="primary"):
+                    with st.spinner("Executing pipeline..."):
+                        result_df, report = pipeline.execute(st.session_state.data)
+                        
+                        st.success(f"✓ Pipeline executed in {report['duration_seconds']:.2f} seconds")
+                        st.write(f"**Successful steps:** {report['successful_steps']}/{report['total_steps']}")
+                        
+                        if report['errors']:
+                            st.error(f"**Errors:** {len(report['errors'])}")
+                            for error in report['errors']:
+                                st.error(f"{error['step']}: {error['error']}")
+                        
+                        st.session_state.history.add_operation(f"Pipeline: {pipeline.name}", st.session_state.data.copy())
+                        st.session_state.data = result_df
+                        
+                        st.subheader("Execution Log")
+                        for log in report['execution_log']:
+                            if log['status'] == 'success':
+                                st.success(f"✓ {log['step']}: {log['result']}")
+                            else:
+                                st.error(f"✗ {log['step']}: {log['result']}")
+
+elif selected_page == "Dashboard Builder":
+    scroll_to_top()
+    st.title("📊 Custom Dashboard Builder")
+    
+    if st.session_state.data is None:
+        st.warning("No data loaded. Please upload a file first.")
+    else:
+        df = st.session_state.data
+        dashboard_mgr = st.session_state.dashboard_manager
+        
+        dashboard_tabs = st.tabs(["🎨 Create Dashboard", "📊 View Dashboard", "📁 Save/Load"])
+        
+        with dashboard_tabs[0]:
+            st.subheader("Create New Dashboard")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                dashboard_name = st.text_input("Dashboard Name", value="My Dashboard")
+                dashboard_desc = st.text_area("Description", value="Custom data dashboard")
+            
+            with col2:
+                rows = st.number_input("Layout Rows", 1, 4, 2)
+                cols = st.number_input("Layout Columns", 1, 4, 2)
+            
+            if st.button("Create Dashboard", type="primary"):
+                dashboard = dashboard_mgr.create_dashboard(dashboard_name, dashboard_desc)
+                dashboard.set_layout(rows, cols)
+                st.session_state.current_dashboard = dashboard.dashboard_id
+                st.success(f"✓ Created dashboard: {dashboard_name}")
+                st.rerun()
+            
+            if hasattr(st.session_state, 'current_dashboard') and st.session_state.current_dashboard:
+                dashboard = dashboard_mgr.get_dashboard(st.session_state.current_dashboard)
+                if dashboard:
+                    st.markdown("---")
+                    st.subheader("Add Widgets")
+                    
+                    widget_templates = dashboard_mgr.get_widget_templates()
+                    widget_type = st.selectbox("Widget Type", list(widget_templates.keys()))
+                    
+                    widget_info = widget_templates[widget_type]
+                    st.info(f"**{widget_info['name']}:** {widget_info['description']}")
+                    
+                    widget_title = st.text_input("Widget Title", value=widget_info['name'])
+                    
+                    config = {}
+                    
+                    numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+                    categorical_cols = df.select_dtypes(include=['object']).columns.tolist()
+                    all_cols = df.columns.tolist()
+                    
+                    if widget_type in ['histogram', 'box_plot', 'metric']:
+                        if numeric_cols:
+                            config['column'] = st.selectbox("Select Column", numeric_cols)
+                        if widget_type == 'metric':
+                            config['aggregation'] = st.selectbox("Aggregation", ['mean', 'sum', 'count', 'max', 'min'])
+                    
+                    elif widget_type == 'scatter':
+                        if len(numeric_cols) >= 2:
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                config['x_column'] = st.selectbox("X Column", numeric_cols)
+                            with col2:
+                                config['y_column'] = st.selectbox("Y Column", numeric_cols)
+                    
+                    elif widget_type == 'line_chart':
+                        if numeric_cols:
+                            config['y_columns'] = st.multiselect("Y Columns", numeric_cols)
+                    
+                    elif widget_type == 'bar_chart':
+                        if all_cols and numeric_cols:
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                config['x_column'] = st.selectbox("X Column", all_cols)
+                            with col2:
+                                config['y_column'] = st.selectbox("Y Column", numeric_cols)
+                    
+                    elif widget_type == 'heatmap':
+                        if numeric_cols:
+                            config['columns'] = st.multiselect("Select Columns", numeric_cols)
+                    
+                    elif widget_type == 'table':
+                        config['columns'] = st.multiselect("Columns", all_cols, default=all_cols[:5])
+                        config['limit'] = st.number_input("Max Rows", 5, 100, 10)
+                    
+                    if st.button("Add Widget"):
+                        dashboard.add_widget(widget_type, widget_title, config)
+                        st.success(f"✓ Added widget: {widget_title}")
+                        st.rerun()
+        
+        with dashboard_tabs[1]:
+            st.subheader("View Dashboard")
+            
+            if hasattr(st.session_state, 'current_dashboard') and st.session_state.current_dashboard:
+                dashboard = dashboard_mgr.get_dashboard(st.session_state.current_dashboard)
+                if dashboard and dashboard.widgets:
+                    try:
+                        fig = dashboard.render(df)
+                        st.plotly_chart(fig, use_container_width=True)
+                    except Exception as e:
+                        st.error(f"Error rendering dashboard: {str(e)}")
+                else:
+                    st.info("No widgets added to dashboard yet")
+            else:
+                st.info("No dashboard created yet")
+        
+        with dashboard_tabs[2]:
+            st.subheader("Manage Dashboards")
+            
+            dashboards = dashboard_mgr.list_dashboards()
+            
+            if dashboards:
+                for d in dashboards:
+                    with st.expander(f"📊 {d['name']}"):
+                        st.write(f"**Description:** {d['description']}")
+                        st.write(f"**Widgets:** {d['widgets_count']}")
+                        st.write(f"**Created:** {d['created']}")
+                        
+                        if st.button(f"Load Dashboard", key=f"load_{d['dashboard_id']}"):
+                            st.session_state.current_dashboard = d['dashboard_id']
+                            st.success(f"Loaded dashboard: {d['name']}")
+                            st.rerun()
 
 elif selected_page == "Export":
     scroll_to_top()

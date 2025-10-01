@@ -47,7 +47,7 @@ class MLDataCleaner:
         X = X.fillna(X.mean())
         
         # Fit Isolation Forest
-        iso_forest = IsolationForest(contamination=contamination, random_state=42)
+        iso_forest = IsolationForest(contamination=contamination, random_state=42)  # type: ignore
         anomaly_labels = iso_forest.fit_predict(X)
         anomaly_scores = iso_forest.score_samples(X)
         
@@ -342,9 +342,12 @@ class MLDataCleaner:
             
             elif action == 'simple_impute' and column != 'All':
                 if fixed_df[column].dtype in [np.float64, np.int64]:
-                    fixed_df[column] = fixed_df[column].fillna(fixed_df[column].median())
+                    median_val = fixed_df[column].median()
+                    fixed_df[column] = fixed_df[column].fillna(median_val)
                 else:
-                    fixed_df[column] = fixed_df[column].fillna(fixed_df[column].mode()[0] if len(fixed_df[column].mode()) > 0 else '')
+                    mode_series = fixed_df[column].mode()
+                    mode_val = mode_series.iloc[0] if len(mode_series) > 0 else ''
+                    fixed_df[column] = fixed_df[column].fillna(mode_val)
             
             elif action == 'strip_whitespace' and column != 'All':
                 if fixed_df[column].dtype == 'object':
@@ -388,7 +391,8 @@ class MLDataCleaner:
         X_pca = pca.fit_transform(X_scaled)
         
         # Create result DataFrame
-        result_df = pd.DataFrame(X_pca, columns=[f'PC{i+1}' for i in range(n_components)])
+        pc_columns = [f'PC{i+1}' for i in range(n_components)]
+        result_df = pd.DataFrame(X_pca, columns=pc_columns)  # type: ignore
         
         return result_df, {
             'explained_variance_ratio': pca.explained_variance_ratio_.tolist(),
