@@ -105,7 +105,7 @@
 
 ### Online Access
 
-**🌐 Visit [datalix-new.streamlit.app](https://datalix.onrender.com/)** to start using Datalix immediately—no installation required!
+**🌐 Visit [datalix.onrender.com](https://datalix.onrender.com/)** to start using Datalix immediately—no installation required!
 
 ### Local Installation
 
@@ -532,7 +532,7 @@ streamlit run app.py --server.port 5000 --server.runOnSave true
 - **Sample Projects**: Example workflows and templates included
 
 ### Getting Help
-- **Live Demo**: [datalix-new.streamlit.app](https://datalix.onrender.com/)
+- **Live Demo**: [datalix.onrender.com](https://datalix.onrender.com/)
 - **GitHub Issues**: [Report bugs and request features](https://github.com/HimanshuSingh-966/datalix/issues)
 - **Discussions**: [Ask questions and share ideas](https://github.com/HimanshuSingh-966/datalix/discussions)
 - **Email Support**: himanshu.singh.2kfive@gmail.com
