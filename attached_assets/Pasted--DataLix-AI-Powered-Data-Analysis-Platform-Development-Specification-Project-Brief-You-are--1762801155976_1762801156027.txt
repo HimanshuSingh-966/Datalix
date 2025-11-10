@@ -1,0 +1,1923 @@
+# DataLix: AI-Powered Data Analysis Platform - Development Specification
+
+## Project Brief
+
+You are tasked with building **DataLix 2.0**, a modern AI-first data analysis platform where users interact with their data entirely through natural language prompts. This is a complete rebuild from Streamlit to React + FastAPI with AI integration.
+
+**Core Concept**: Users upload datasets and use conversational AI (like ChatGPT) to clean, analyze, visualize, and export data - all through natural language commands.
+
+---
+
+## 🎯 Project Goals
+
+### Primary Objective
+Transform the existing DataLix Streamlit application into a modern, prompt-based data analysis platform with:
+- React + TypeScript frontend with chat-first UI
+- FastAPI Python backend with AI orchestration
+- Groq API for fast data operations
+- Google AI Studio (Gemini) for advanced analysis
+- Supabase for authentication, storage, and database
+
+### Success Criteria
+- Users can upload data and interact purely through chat prompts
+- AI accurately interprets user intent and executes data operations
+- All existing DataLix features accessible via natural language
+- Secure user authentication and data isolation
+- Production-ready deployment
+
+---
+
+## 📋 Current System (To Be Replaced)
+
+### Existing Stack
+- **Frontend**: Streamlit (Python web framework)
+- **Data Processing**: Pandas, NumPy, Scikit-learn
+- **Visualization**: Plotly
+- **ML Features**: Isolation Forest, KNN, DBSCAN, PCA
+- **Database**: SQLAlchemy, PostgreSQL, MySQL support
+
+### Current Features (Must Preserve)
+1. Multi-format data upload (CSV, Excel, JSON, Parquet)
+2. Data quality scoring (weighted 0-100 scale)
+3. Missing value imputation (mean, median, mode, KNN)
+4. Outlier detection (IQR, Z-Score, Isolation Forest)
+5. Duplicate removal
+6. Pattern recognition (emails, phones, URLs)
+7. Categorical encoding (label, one-hot, ordinal)
+8. Statistical analysis
+9. Visualization (histograms, scatter, heatmaps, etc.)
+10. Data export (CSV, Excel, JSON)
+11. Batch processing with templates
+12. Pipeline builder
+13. Dashboard creation
+14. Database connectivity (PostgreSQL, MySQL)
+15. Undo/redo functionality
+
+---
+
+## 🏗️ New Architecture Requirements
+
+### Technology Stack
+
+#### Frontend
+- **Framework**: React 18+ with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui or custom components
+- **State Management**: Zustand
+- **API Client**: Axios with React Query
+- **Charts**: Plotly.js (React wrapper)
+- **File Upload**: react-dropzone
+- **Markdown**: react-markdown (for AI responses)
+
+#### Backend
+- **Framework**: FastAPI (Python 3.11+)
+- **Async Processing**: Celery + Redis (optional for production)
+- **Data Processing**: Pandas, NumPy, Scikit-learn
+- **Validation**: Pydantic v2
+- **AI Integration**:
+  - Groq Python SDK (groq package)
+  - Google Generative AI SDK
+- **Database**: Supabase (PostgreSQL)
+- **Storage**: Supabase Storage
+
+#### Infrastructure
+- **Authentication**: Supabase Auth (email, Google OAuth, GitHub OAuth)
+- **Database**: Supabase PostgreSQL with Row Level Security
+- **File Storage**: Supabase Storage buckets
+- **Deployment**: 
+  - Backend: Railway, Render, or AWS Lambda
+  - Frontend: Vercel or Netlify
+
+---
+
+## 🎨 UI/UX Design Specifications
+
+### Main Layout
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  DataLix AI    [New Session] [History] [Profile] [Logout]      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  💬 Chat Feed (Scrollable, Auto-scroll to bottom)               │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │ USER MESSAGE                                              │  │
+│  │ Upload sales_data.csv and analyze it                      │  │
+│  ├───────────────────────────────────────────────────────────┤  │
+│  │ AI RESPONSE                                               │  │
+│  │ ✓ Loaded dataset: 1,250 rows × 8 columns                │  │
+│  │ Quality Score: 67/100 ⚠️                                 │  │
+│  │                                                            │  │
+│  │ [DATA PREVIEW TABLE - 5 rows shown]                      │  │
+│  │                                                            │  │
+│  │ Issues found:                                             │  │
+│  │ • 89 missing values in 'age' column                      │  │
+│  │ • 12 duplicate rows                                       │  │
+│  │ • 45 outliers in 'price' column                          │  │
+│  │                                                            │  │
+│  │ Suggested Actions:                                        │  │
+│  │ [Clean Dataset] [Show Statistics] [Create Chart]         │  │
+│  ├───────────────────────────────────────────────────────────┤  │
+│  │ USER MESSAGE                                              │  │
+│  │ Clean the dataset and remove outliers                     │  │
+│  ├───────────────────────────────────────────────────────────┤  │
+│  │ AI RESPONSE                                               │  │
+│  │ ✓ Removed 12 duplicate rows                              │  │
+│  │ ✓ Imputed 89 missing values (median)                     │  │
+│  │ ✓ Removed 45 outliers (IQR method)                       │  │
+│  │ New Quality Score: 94/100 ✨                             │  │
+│  │                                                            │  │
+│  │ [Download Cleaned Data] [Show Changes]                   │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                                                                   │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │ 💬 Type your message...                      [📎] [Send]  │  │
+│  │ Examples: "Show correlation" • "Export as CSV"            │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Component Requirements
+
+#### 1. Authentication Page
+- Clean, modern login/signup form
+- Email + password fields
+- Social auth buttons (Google, GitHub)
+- Toggle between login/signup
+- Error message display
+- Loading states
+
+#### 2. Chat Interface (Main Component)
+- **Header Bar**:
+  - Logo and title
+  - Dataset status indicator
+  - Upload file button
+  - User menu (profile, settings, logout)
+  
+- **Message Feed**:
+  - User messages (right-aligned, blue background)
+  - AI messages (left-aligned, white background)
+  - Automatic scroll to bottom
+  - Loading indicator when processing
+  
+- **Message Bubbles**:
+  - Text content (support markdown)
+  - Embedded data previews (tables)
+  - Embedded charts (Plotly)
+  - Action buttons (suggested next steps)
+  - Timestamp
+  
+- **Input Area**:
+  - Multi-line text input (auto-expand)
+  - File attachment button
+  - Send button
+  - Example prompt suggestions below input
+
+#### 3. Data Preview Component
+- Compact table showing dataset rows
+- Column headers with data types
+- Null values highlighted in red
+- Expand/collapse functionality
+- Row/column count display
+
+#### 4. Chart Display Component
+- Full-width Plotly chart
+- Interactive (zoom, pan, hover)
+- Responsive sizing
+- Export chart button (optional)
+
+#### 5. File Upload Modal
+- Drag-and-drop zone
+- File browser button
+- Supported formats indicator (CSV, Excel, JSON, Parquet)
+- Upload progress bar
+- File size/name display
+- Cancel button
+
+#### 6. Suggested Actions
+- Horizontal pill buttons
+- Click to auto-fill prompt
+- Context-aware suggestions based on data state
+
+---
+
+## 🤖 AI Integration Specifications
+
+### Groq API Integration
+
+#### Purpose
+Fast inference for real-time data operations and quick responses.
+
+#### Configuration
+```python
+Model: llama3-70b-8192 (or mixtral-8x7b-32768)
+Temperature: 0.1-0.3 (deterministic for data operations)
+Max Tokens: 1000-2000
+Response Format: JSON for structured data, text for explanations
+```
+
+#### Function Calling Setup
+Implement the following functions that the AI can call:
+
+1. **upload_and_analyze_data**
+   - Input: file_path, encoding
+   - Output: dataset info, quality score, preview, issues
+
+2. **clean_dataset**
+   - Input: operations array, columns, methods
+   - Operations: remove_duplicates, impute_missing, remove_outliers, normalize_text
+   - Output: results summary, new quality score
+
+3. **impute_missing_values**
+   - Input: columns, method (mean/median/mode/knn/forward_fill/backward_fill)
+   - Output: imputation results, affected rows count
+
+4. **detect_and_remove_outliers**
+   - Input: columns, method (iqr/zscore/isolation_forest/dbscan), threshold
+   - Output: outliers found, outliers removed, method details
+
+5. **create_visualization**
+   - Input: chart_type, x_column, y_column, color_by, title
+   - Types: histogram, scatter, line, bar, box, heatmap, pie
+   - Output: Plotly JSON chart data
+
+6. **get_statistics**
+   - Input: columns, stats array
+   - Stats: mean, median, std, min, max, count, correlation
+   - Output: statistical summary
+
+7. **filter_data**
+   - Input: conditions array (column, operator, value)
+   - Operators: >, <, ==, !=, >=, <=, contains
+   - Output: filtered dataset info
+
+8. **encode_categorical**
+   - Input: columns, method (label/onehot/ordinal/target)
+   - Output: encoding results, new columns created
+
+9. **export_data**
+   - Input: format (csv/excel/json/parquet), filename
+   - Output: download URL or file path
+
+10. **generate_quality_report**
+    - Input: include_recommendations (boolean)
+    - Output: comprehensive quality metrics and recommendations
+
+11. **run_ml_analysis**
+    - Input: analysis_type, algorithm, parameters
+    - Types: anomaly_detection, clustering, dimensionality_reduction, feature_importance
+    - Output: analysis results, visualizations
+
+#### Implementation Notes
+- Parse user prompts to determine which function(s) to call
+- Handle multi-step operations (e.g., "clean and visualize")
+- Return human-readable explanations along with function results
+- Handle errors gracefully with helpful messages
+
+### Google AI Studio (Gemini) Integration
+
+#### Purpose
+Advanced reasoning, complex queries, and contextual understanding.
+
+#### Configuration
+```python
+Model: gemini-1.5-flash (fast) or gemini-1.5-pro (advanced)
+Temperature: 0.3-0.5 (balanced creativity)
+```
+
+#### Use Cases
+1. **Natural Language Data Queries**
+   - "What's the average age of customers from New York?"
+   - Parse intent, generate pandas/SQL code, execute, explain results
+
+2. **Intelligent Recommendations**
+   - Analyze entire dataset context
+   - Suggest optimal cleaning workflow
+   - Prioritize operations by impact
+
+3. **Dashboard Generation**
+   - "Create a sales dashboard"
+   - Generate dashboard layout with appropriate widgets
+   - Return configuration JSON
+
+4. **Quality Reports**
+   - Generate comprehensive, narrative reports
+   - Explain issues in natural language
+   - Provide actionable recommendations
+
+5. **Conversational Context**
+   - Maintain conversation memory
+   - Understand follow-up questions
+   - Provide guidance on operations
+
+#### Implementation Strategy
+- Use Gemini when user asks open-ended questions
+- Use Groq when user requests specific operations
+- Combine both for complex workflows
+
+---
+
+## 🗄️ Supabase Configuration
+
+### Authentication Setup
+
+#### Enable Auth Providers
+1. Email/Password (with email confirmation)
+2. Google OAuth
+3. GitHub OAuth
+
+#### Auth Flow Requirements
+- Redirect to chat interface after login
+- Session persistence in local storage
+- Auto-refresh tokens
+- Handle auth errors gracefully
+- Logout functionality clears all state
+
+### Database Schema
+
+```sql
+-- Sessions table
+CREATE TABLE sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id TEXT UNIQUE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  dataset_name TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Chat history table
+CREATE TABLE chat_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id TEXT REFERENCES sessions(session_id) ON DELETE CASCADE,
+  messages JSONB NOT NULL DEFAULT '[]'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Templates table (reusable workflows)
+CREATE TABLE templates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  operations JSONB NOT NULL,
+  is_public BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Analysis history
+CREATE TABLE analysis_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  session_id TEXT REFERENCES sessions(session_id) ON DELETE CASCADE,
+  dataset_name TEXT,
+  operations JSONB,
+  quality_before DECIMAL(5,2),
+  quality_after DECIMAL(5,2),
+  rows_before INTEGER,
+  rows_after INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable Row Level Security
+ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE analysis_history ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies (users can only access their own data)
+CREATE POLICY "users_own_sessions" ON sessions
+  FOR ALL USING (auth.uid() = user_id);
+
+CREATE POLICY "users_own_chat_sessions" ON chat_sessions
+  FOR ALL USING (
+    session_id IN (
+      SELECT session_id FROM sessions WHERE user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "users_own_templates" ON templates
+  FOR SELECT USING (auth.uid() = user_id OR is_public = TRUE);
+
+CREATE POLICY "users_insert_templates" ON templates
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "users_own_history" ON analysis_history
+  FOR ALL USING (auth.uid() = user_id);
+```
+
+### Storage Buckets
+
+```sql
+-- Create buckets
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('datasets', 'datasets', false);
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('exports', 'exports', false);
+
+-- Storage RLS policies
+CREATE POLICY "users_upload_datasets" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'datasets' AND
+    (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+CREATE POLICY "users_view_datasets" ON storage.objects
+  FOR SELECT USING (
+    bucket_id = 'datasets' AND
+    (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+CREATE POLICY "users_delete_datasets" ON storage.objects
+  FOR DELETE USING (
+    bucket_id = 'datasets' AND
+    (storage.foldername(name))[1] = auth.uid()::text
+  );
+```
+
+### File Storage Structure
+```
+datasets/
+  {user_id}/
+    {session_id}/
+      original_filename.csv
+      
+exports/
+  {user_id}/
+    {session_id}/
+      cleaned_filename.csv
+```
+
+---
+
+## 🔌 Backend API Specification
+
+### Base Configuration
+
+```python
+# main.py
+FastAPI app with:
+- CORS middleware (allow frontend origin)
+- Exception handlers
+- Request logging
+- Rate limiting (optional)
+- Health check endpoint
+```
+
+### API Endpoints
+
+#### Authentication (Handled by Supabase, but verify tokens)
+```
+POST /api/auth/verify
+- Verify Supabase JWT token
+- Return user info
+```
+
+#### Session Management
+```
+POST /api/sessions/new
+- Create new analysis session
+- Input: user_id
+- Output: session_id
+
+GET /api/sessions
+- List user's sessions
+- Output: array of sessions
+
+GET /api/sessions/{session_id}
+- Get session details
+- Output: session info, dataset name, created date
+
+DELETE /api/sessions/{session_id}
+- Delete session and cleanup files
+```
+
+#### Chat
+```
+POST /api/chat
+- Main chat endpoint
+- Input: {
+    session_id: string,
+    message: string,
+    model: "groq" | "gemini"
+  }
+- Output: {
+    message: string,
+    function_calls: string[],
+    results: object,
+    data_preview: object | null,
+    chart_data: string | null,
+    suggested_actions: array
+  }
+- Handles streaming (optional)
+
+GET /api/sessions/{session_id}/history
+- Get chat history
+- Output: array of messages
+```
+
+#### File Upload
+```
+POST /api/upload
+- Upload dataset file
+- Input: multipart/form-data (file, session_id)
+- Process: Save to Supabase Storage
+- Output: {
+    file_path: string,
+    filename: string,
+    size: number
+  }
+```
+
+#### Data Operations
+```
+POST /api/operations/execute
+- Execute single operation
+- Input: {
+    session_id: string,
+    operation: {
+      type: string,
+      parameters: object
+    }
+  }
+- Output: operation results
+
+POST /api/operations/batch
+- Execute multiple operations
+- Input: operations array
+- Output: batch results
+
+POST /api/operations/undo
+- Undo last operation
+- Maintain operation history in memory
+
+POST /api/operations/redo
+- Redo undone operation
+```
+
+#### Export
+```
+POST /api/export
+- Export processed dataset
+- Input: {
+    session_id: string,
+    format: "csv" | "excel" | "json" | "parquet",
+    filename: string
+  }
+- Process: Save to Supabase Storage exports bucket
+- Output: download URL (signed URL, 1 hour expiry)
+```
+
+#### Templates
+```
+POST /api/templates
+- Save operation template
+- Input: template object
+
+GET /api/templates
+- List user's templates + public templates
+
+GET /api/templates/{template_id}
+- Get template details
+
+POST /api/templates/{template_id}/apply
+- Apply template to current dataset
+```
+
+#### Quality Assessment
+```
+GET /api/quality/{session_id}
+- Calculate quality score
+- Output: {
+    overall_score: number,
+    completeness: number,
+    consistency: number,
+    uniqueness: number,
+    validity: number,
+    column_metrics: object,
+    issues: array,
+    recommendations: array
+  }
+```
+
+### Backend Data Processing Functions
+
+Implement these core functions:
+
+#### Data Quality Calculation
+```python
+def calculate_quality_score(df: pd.DataFrame) -> dict:
+    """
+    Calculate weighted quality score:
+    - Completeness: 40% (non-null values)
+    - Consistency: 30% (format uniformity)
+    - Uniqueness: 20% (no duplicates)
+    - Validity: 10% (no outliers)
+    
+    Returns: {
+        overall_score: float (0-100),
+        completeness: float,
+        consistency: float,
+        uniqueness: float,
+        validity: float,
+        column_metrics: dict
+    }
+    """
+```
+
+#### Data Cleaning Operations
+```python
+def remove_duplicates(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+    """Remove duplicate rows, return (cleaned_df, results)"""
+
+def impute_missing(df: pd.DataFrame, columns: list, method: str) -> tuple[pd.DataFrame, dict]:
+    """Impute missing values using specified method"""
+
+def remove_outliers(df: pd.DataFrame, columns: list, method: str) -> tuple[pd.DataFrame, dict]:
+    """Detect and remove outliers using IQR, Z-score, or Isolation Forest"""
+
+def encode_categorical(df: pd.DataFrame, columns: list, method: str) -> tuple[pd.DataFrame, dict]:
+    """Encode categorical variables"""
+```
+
+#### ML Operations
+```python
+def detect_anomalies_isolation_forest(df: pd.DataFrame, columns: list, contamination: float) -> dict:
+    """Use Isolation Forest to detect anomalies"""
+
+def knn_imputation(df: pd.DataFrame, columns: list, n_neighbors: int) -> tuple[pd.DataFrame, dict]:
+    """KNN-based missing value imputation"""
+
+def dbscan_clustering(df: pd.DataFrame, columns: list, eps: float, min_samples: int) -> dict:
+    """DBSCAN clustering for outlier detection"""
+```
+
+#### Visualization Generation
+```python
+def create_plotly_chart(df: pd.DataFrame, chart_type: str, **kwargs) -> str:
+    """
+    Generate Plotly chart, return JSON string
+    Chart types: histogram, scatter, line, bar, box, heatmap, pie
+    """
+```
+
+### Session State Management
+
+Each session should maintain:
+```python
+class DataSession:
+    session_id: str
+    user_id: str
+    df: pd.DataFrame  # Current dataset
+    history: List[pd.DataFrame]  # For undo/redo (max 50)
+    operations: List[dict]  # Operation log
+    chat_history: List[dict]  # Chat messages
+    metadata: dict  # Dataset info, quality scores, etc.
+```
+
+Store in memory with Redis (production) or dict (development).
+
+---
+
+## 📦 Project Structure
+
+### Backend Structure
+```
+backend/
+├── main.py                 # FastAPI app entry point
+├── requirements.txt        # Python dependencies
+├── .env                    # Environment variables
+├── config/
+│   ├── settings.py         # Configuration
+│   ├── supabase.py         # Supabase client
+│   └── ai_clients.py       # Groq, Gemini clients
+├── api/
+│   ├── routes/
+│   │   ├── auth.py         # Auth endpoints
+│   │   ├── chat.py         # Chat endpoints
+│   │   ├── sessions.py     # Session management
+│   │   ├── upload.py       # File upload
+│   │   ├── operations.py   # Data operations
+│   │   └── export.py       # Export endpoints
+│   └── dependencies.py     # Shared dependencies
+├── services/
+│   ├── ai_service.py       # AI orchestration
+│   ├── groq_service.py     # Groq integration
+│   ├── gemini_service.py   # Gemini integration
+│   └── session_manager.py  # Session state management
+├── core/
+│   ├── data_processor.py   # Data cleaning functions
+│   ├── ml_operations.py    # ML algorithms
+│   ├── quality_assessment.py # Quality scoring
+│   └── visualization.py    # Chart generation
+├── models/
+│   ├── schemas.py          # Pydantic models
+│   └── types.py            # Type definitions
+└── utils/
+    ├── file_handler.py     # File I/O
+    └── helpers.py          # Utility functions
+```
+
+### Frontend Structure
+```
+frontend/
+├── src/
+│   ├── App.tsx             # Main app component
+│   ├── main.tsx            # Entry point
+│   ├── components/
+│   │   ├── AuthPage.tsx    # Login/signup
+│   │   ├── ChatInterface.tsx  # Main chat UI
+│   │   ├── MessageBubble.tsx  # Chat message
+│   │   ├── DataPreview.tsx    # Table preview
+│   │   ├── ChartDisplay.tsx   # Plotly charts
+│   │   ├── FileUpload.tsx     # File upload modal
+│   │   ├── SuggestedActions.tsx # Action buttons
+│   │   ├── Sidebar.tsx        # Navigation
+│   │   └── Header.tsx         # Top bar
+│   ├── store/
+│   │   ├── authStore.ts    # Auth state (Zustand)
+│   │   ├── chatStore.ts    # Chat state
+│   │   └── dataStore.ts    # Data state
+│   ├── services/
+│   │   ├── api.ts          # Axios client
+│   │   ├── supabase.ts     # Supabase client
+│   │   └── auth.ts         # Auth helpers
+│   ├── types/
+│   │   └── index.ts        # TypeScript types
+│   ├── utils/
+│   │   └── helpers.ts      # Utility functions
+│   └── styles/
+│       └── globals.css     # Tailwind imports
+├── public/
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+├── tailwind.config.js
+└── .env
+```
+
+---
+
+## 🔐 Environment Variables
+
+### Backend (.env)
+```bash
+# Required
+GROQ_API_KEY=your_groq_api_key
+GOOGLE_AI_API_KEY=your_google_ai_api_key
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_SERVICE_KEY=your_service_role_key
+SUPABASE_JWT_SECRET=your_jwt_secret
+
+# Optional
+OPENAI_API_KEY=your_openai_key  # Backup AI
+REDIS_URL=redis://localhost:6379  # For production
+PORT=8000
+CORS_ORIGINS=http://localhost:5173,https://yourdomain.com
+```
+
+### Frontend (.env)
+```bash
+VITE_API_URL=http://localhost:8000
+VITE_SUPABASE_URL=https://xxx.supabase.co
+VITE_SUPABASE_ANON_KEY=your_anon_key
+```
+
+---
+
+## 📝 Implementation Checklist
+
+### Phase 1: Setup & Infrastructure (Week 1)
+- [ ] Create Supabase project
+- [ ] Configure authentication providers (Email, Google, GitHub)
+- [ ] Create database tables with RLS policies
+- [ ] Create storage buckets with policies
+- [ ] Obtain Groq API key from console.groq.com
+- [ ] Obtain Google AI Studio API key
+- [ ] Setup Git repository
+- [ ] Create backend folder structure
+- [ ] Create frontend folder structure
+- [ ] Setup development environment
+
+### Phase 2: Backend Development (Week 2-3)
+- [ ] Initialize FastAPI application with CORS
+- [ ] Implement Supabase client configuration
+- [ ] Implement Groq service with function calling
+- [ ] Implement Gemini service
+- [ ] Create session management system
+- [ ] Implement data processing functions:
+  - [ ] File upload/parsing
+  - [ ] Quality assessment
+  - [ ] Data cleaning operations
+  - [ ] ML operations (Isolation Forest, KNN, etc.)
+  - [ ] Visualization generation
+- [ ] Create API endpoints:
+  - [ ] Session management
+  - [ ] Chat endpoint with AI orchestration
+  - [ ] File upload
+  - [ ] Data operations
+  - [ ] Export
+  - [ ] Templates
+- [ ] Implement error handling
+- [ ] Add request logging
+- [ ] Write API documentation
+
+### Phase 3: Frontend Development (Week 3-4)
+- [ ] Initialize React + Vite + TypeScript project
+- [ ] Setup Tailwind CSS
+- [ ] Create Supabase client
+- [ ] Implement authentication flow:
+  - [ ] Login/signup UI
+  - [ ] OAuth integration
+  - [ ] Session persistence
+  - [ ] Protected routes
+- [ ] Build main components:
+  - [ ] Chat interface layout
+  - [ ] Message bubbles with markdown support
+  - [ ] Data preview table
+  - [ ] Chart display (Plotly integration)
+  - [ ] File upload with drag-drop
+  - [ ] Suggested action buttons
+- [ ] Implement state management (Zustand):
+  - [ ] Auth store
+  - [ ] Chat store
+  - [ ] Data store
+- [ ] Create API service layer
+- [ ] Implement real-time features:
+  - [ ] Message streaming (optional)
+  - [ ] Auto-scroll chat
+  - [ ] Loading states
+- [ ] Add responsive design
+- [ ] Implement error boundaries
+
+### Phase 4: Integration & Testing (Week 4-5)
+- [ ] Connect frontend to backend API
+- [ ] Test all data operations via chat
+- [ ] Test file upload and storage
+- [ ] Test AI function calling
+- [ ] Test authentication flow
+- [ ] Test data export
+- [ ] Handle edge cases and errors
+- [ ] Test with various dataset sizes
+- [ ] Test with different file formats
+- [ ] Performance optimization
+- [ ] Security audit
+
+### Phase 5: Deployment (Week 5)
+- [ ] Setup production environment variables
+- [ ] Deploy backend (Railway/Render)
+- [ ] Deploy frontend (Vercel/Netlify)
+- [ ] Configure custom domain (if applicable)
+- [ ] Setup monitoring and logging
+- [ ] Create user documentation
+- [ ] Create video walkthrough
+
+---
+
+## 🧪 Testing Requirements
+
+### Backend Tests
+- Unit tests for data processing functions
+- Integration tests for API endpoints
+- Test AI function calling with mock responses
+- Test session management
+- Test file upload/download
+- Test quality scoring accuracy
+
+### Frontend Tests
+- Component rendering tests
+- User interaction tests
+- Authentication flow tests
+- API integration tests
+- Responsive design tests
+
+### User Acceptance Tests
+Test these user flows:
+1. Sign up → Upload file → Get analysis → Clean data → Export
+2. Login → Resume previous session → Continue analysis
+3. Upload file → Create visualization → Share chart
+4. Use template → Apply to new dataset
+5. Complex multi-step operations via prompts
+
+---
+
+## 📚 Example Prompts (For Testing)
+
+### Basic Operations
+- "Upload my sales data and analyze it"
+- "Show me the first 10 rows"
+- "What's the quality score?"
+- "Remove all duplicate rows"
+- "Fill missing values in age column with median"
+
+### Cleaning
+- "Clean this dataset automatically"
+- "Remove outliers from price column using IQR method"
+- "Normalize all text to lowercase"
+- "Convert salary column to numeric"
+
+### Analysis
+- "Show statistical summary"
+- "What's the correlation between age and income?"
+- "Find anomalies using Isolation Forest"
+- "Cluster customers into 3 groups"
+
+### Visualization
+- "Create a histogram of ages"
+- "Show scatter plot of price vs quantity"
+- "Generate a correlation heatmap"
+- "Plot sales trends over time"
+
+### Export
+- "Export cleaned data as CSV"
+- "Download as Excel file"
+- "Save to my database"
+
+---
+
+## 🎯 Success Metrics
+
+### Technical Metrics
+- API response time < 2 seconds for simple operations
+- AI response time < 5 seconds
+- File upload success rate > 99%
+- Zero data loss or corruption
+- 99% uptime
+
+### User Experience Metrics
+- Users can complete data cleaning in < 5 prompts
+- 90% of operations succeed on first try
+- Users find AI responses helpful and accurate
+- Minimal user training required
+
+---
+
+## 📖 Dependencies
+
+### Backend (requirements.txt)
+```txt
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+pandas==2.1.3
+numpy==1.24.3
+scikit-learn==1.3.2
+plotly==5.18.0
+groq==0.4.0
+google-generativeai==0.3.2
+supabase==2.3.0
+python-dotenv==1.0.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+openpyxl==3.1.2
+chardet==5.2.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+redis==5.0.1
+celery==5.3.4
+httpx==0.25.2
+```
+
+### Frontend (package.json)
+```json
+{
+  "name": "datalix-frontend",
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "zustand": "^4.4.7",
+    "axios": "^1.6.2",
+    "@tanstack/react-query": "^5.12.2",
+    "react-dropzone": "^14.2.3",
+    "react-plotly.js": "^2.6.0",
+    "plotly.js": "^2.27.1",
+    "react-markdown": "^9.0.1",
+    "remark-gfm": "^4.0.0",
+    "lucide-react": "^0.294.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.1.0",
+    "date-fns": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@types/react-plotly.js": "^2.6.3",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.4",
+    "tailwindcss": "^3.3.6",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "eslint": "^8.55.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0"
+  }
+}
+```
+
+---
+
+## 🎨 Design System & Styling Guidelines
+
+### Color Palette
+```css
+/* Primary Colors */
+--primary-50: #eff6ff;
+--primary-100: #dbeafe;
+--primary-500: #3b82f6;  /* Main brand color */
+--primary-600: #2563eb;
+--primary-700: #1d4ed8;
+
+/* Neutral Colors */
+--gray-50: #f9fafb;
+--gray-100: #f3f4f6;
+--gray-200: #e5e7eb;
+--gray-300: #d1d5db;
+--gray-500: #6b7280;
+--gray-700: #374151;
+--gray-900: #111827;
+
+/* Status Colors */
+--success: #10b981;
+--warning: #f59e0b;
+--error: #ef4444;
+--info: #3b82f6;
+```
+
+### Typography
+```css
+/* Font Family */
+font-family: 'Inter', system-ui, sans-serif;
+
+/* Font Sizes */
+text-xs: 0.75rem;    /* 12px */
+text-sm: 0.875rem;   /* 14px */
+text-base: 1rem;     /* 16px */
+text-lg: 1.125rem;   /* 18px */
+text-xl: 1.25rem;    /* 20px */
+text-2xl: 1.5rem;    /* 24px */
+text-3xl: 1.875rem;  /* 30px */
+```
+
+### Component Styling Standards
+
+#### Buttons
+```tsx
+// Primary Button
+className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
+           transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+
+// Secondary Button
+className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 
+           transition-colors"
+
+// Suggested Action Chip
+className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm 
+           border border-blue-200 hover:bg-blue-100 transition-colors"
+```
+
+#### Input Fields
+```tsx
+className="w-full px-4 py-2 border border-gray-300 rounded-lg 
+           focus:outline-none focus:ring-2 focus:ring-blue-500 
+           focus:border-transparent"
+```
+
+#### Cards/Panels
+```tsx
+className="bg-white rounded-lg border border-gray-200 shadow-sm p-4"
+```
+
+### Responsive Breakpoints
+```css
+sm: 640px   /* Small devices */
+md: 768px   /* Medium devices */
+lg: 1024px  /* Large devices */
+xl: 1280px  /* Extra large devices */
+```
+
+---
+
+## 🔧 Detailed Implementation Guidelines
+
+### Backend Implementation Details
+
+#### 1. AI Orchestration Strategy
+
+```python
+# services/ai_service.py
+
+class AIOrchestrator:
+    """
+    Determines which AI model to use based on request complexity
+    """
+    
+    def __init__(self):
+        self.groq = GroqService()
+        self.gemini = GeminiService()
+    
+    async def process_message(
+        self, 
+        message: str, 
+        session: DataSession,
+        model_preference: str = "auto"
+    ):
+        """
+        Route to appropriate AI service
+        
+        Auto-routing logic:
+        - Simple operations (clean, filter, export) → Groq
+        - Complex analysis (insights, recommendations) → Gemini
+        - Visualization requests → Groq
+        - Natural language queries → Gemini
+        """
+        
+        if model_preference == "groq":
+            return await self.groq.process(message, session)
+        elif model_preference == "gemini":
+            return await self.gemini.process(message, session)
+        else:
+            # Auto-select based on keywords
+            if self._is_simple_operation(message):
+                return await self.groq.process(message, session)
+            else:
+                return await self.gemini.process(message, session)
+    
+    def _is_simple_operation(self, message: str) -> bool:
+        """Detect if message is a simple operation"""
+        simple_keywords = [
+            'remove', 'delete', 'drop', 'clean', 'impute', 
+            'fill', 'filter', 'export', 'download', 'chart',
+            'plot', 'histogram', 'scatter'
+        ]
+        return any(kw in message.lower() for kw in simple_keywords)
+```
+
+#### 2. Session State Management
+
+```python
+# services/session_manager.py
+
+from typing import Dict, Optional
+import pandas as pd
+from datetime import datetime
+
+class SessionManager:
+    """
+    Manages in-memory session state
+    For production, use Redis for persistence
+    """
+    
+    def __init__(self):
+        self._sessions: Dict[str, DataSession] = {}
+        self._max_history = 50  # Max undo steps
+    
+    def create_session(self, user_id: str, session_id: str) -> DataSession:
+        """Create new session"""
+        session = DataSession(
+            session_id=session_id,
+            user_id=user_id,
+            created_at=datetime.now()
+        )
+        self._sessions[session_id] = session
+        return session
+    
+    def get_session(self, session_id: str) -> Optional[DataSession]:
+        """Get existing session"""
+        return self._sessions.get(session_id)
+    
+    def update_dataset(
+        self, 
+        session_id: str, 
+        df: pd.DataFrame,
+        operation: dict
+    ):
+        """Update dataset and track history"""
+        session = self._sessions[session_id]
+        
+        # Save current state to history
+        if session.df is not None:
+            session.history.append(session.df.copy())
+            session.operations.append(operation)
+            
+            # Limit history size
+            if len(session.history) > self._max_history:
+                session.history.pop(0)
+                session.operations.pop(0)
+        
+        # Update current dataset
+        session.df = df
+        session.updated_at = datetime.now()
+    
+    def undo(self, session_id: str) -> Optional[pd.DataFrame]:
+        """Undo last operation"""
+        session = self._sessions[session_id]
+        
+        if session.history:
+            session.df = session.history.pop()
+            session.operations.pop()
+            return session.df
+        
+        return None
+    
+    def delete_session(self, session_id: str):
+        """Clean up session"""
+        if session_id in self._sessions:
+            del self._sessions[session_id]
+
+# Data session model
+class DataSession:
+    def __init__(self, session_id: str, user_id: str, created_at: datetime):
+        self.session_id = session_id
+        self.user_id = user_id
+        self.df: Optional[pd.DataFrame] = None
+        self.history: List[pd.DataFrame] = []
+        self.operations: List[dict] = []
+        self.chat_history: List[dict] = []
+        self.metadata: dict = {}
+        self.created_at = created_at
+        self.updated_at = created_at
+```
+
+#### 3. Quality Assessment Implementation
+
+```python
+# core/quality_assessment.py
+
+import pandas as pd
+import numpy as np
+from typing import Dict, List
+
+def calculate_quality_metrics(df: pd.DataFrame) -> dict:
+    """
+    Calculate comprehensive quality metrics
+    
+    Returns:
+        {
+            'overall_score': float (0-100),
+            'completeness': float (0-1),
+            'consistency': float (0-1),
+            'uniqueness': float (0-1),
+            'validity': float (0-1),
+            'column_metrics': dict,
+            'issues': list,
+            'recommendations': list
+        }
+    """
+    
+    # 1. Completeness (40% weight)
+    total_cells = len(df) * len(df.columns)
+    missing_cells = df.isnull().sum().sum()
+    completeness = 1 - (missing_cells / total_cells)
+    
+    # 2. Consistency (30% weight)
+    consistency = calculate_consistency(df)
+    
+    # 3. Uniqueness (20% weight)
+    duplicate_rows = df.duplicated().sum()
+    uniqueness = 1 - (duplicate_rows / len(df))
+    
+    # 4. Validity (10% weight)
+    validity = calculate_validity(df)
+    
+    # Weighted overall score
+    overall = (
+        completeness * 0.4 +
+        consistency * 0.3 +
+        uniqueness * 0.2 +
+        validity * 0.1
+    ) * 100
+    
+    # Column-level metrics
+    column_metrics = {}
+    for col in df.columns:
+        column_metrics[col] = {
+            'missing_pct': (df[col].isnull().sum() / len(df)) * 100,
+            'unique_count': df[col].nunique(),
+            'dtype': str(df[col].dtype),
+            'sample_values': df[col].dropna().head(5).tolist()
+        }
+    
+    # Identify issues
+    issues = identify_issues(df, completeness, uniqueness, validity)
+    
+    # Generate recommendations
+    recommendations = generate_recommendations(issues)
+    
+    return {
+        'overall_score': round(overall, 2),
+        'completeness': round(completeness, 3),
+        'consistency': round(consistency, 3),
+        'uniqueness': round(uniqueness, 3),
+        'validity': round(validity, 3),
+        'column_metrics': column_metrics,
+        'issues': issues,
+        'recommendations': recommendations
+    }
+
+def calculate_consistency(df: pd.DataFrame) -> float:
+    """
+    Check format consistency in string columns
+    """
+    consistency_scores = []
+    
+    for col in df.select_dtypes(include=['object']).columns:
+        col_data = df[col].dropna()
+        if len(col_data) == 0:
+            continue
+        
+        # Check for consistent patterns
+        # Email pattern
+        if col_data.str.contains('@', na=False).any():
+            email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+
+            matches = col_data.str.match(email_pattern, na=False).sum()
+            score = matches / len(col_data)
+            consistency_scores.append(score)
+        
+        # Phone pattern
+        elif col_data.str.contains(r'\d{3}', na=False).any():
+            # Check if all values follow similar pattern
+            lengths = col_data.str.len()
+            length_consistency = (lengths.mode()[0] == lengths).sum() / len(col_data)
+            consistency_scores.append(length_consistency)
+        
+        # General whitespace consistency
+        else:
+            no_extra_spaces = ~col_data.str.contains(r'\s{2,}', na=False)
+            score = no_extra_spaces.sum() / len(col_data)
+            consistency_scores.append(score)
+    
+    return np.mean(consistency_scores) if consistency_scores else 1.0
+
+def calculate_validity(df: pd.DataFrame) -> float:
+    """
+    Check for outliers in numeric columns
+    """
+    validity_scores = []
+    
+    for col in df.select_dtypes(include=[np.number]).columns:
+        col_data = df[col].dropna()
+        if len(col_data) < 10:
+            continue
+        
+        # IQR method for outlier detection
+        Q1 = col_data.quantile(0.25)
+        Q3 = col_data.quantile(0.75)
+        IQR = Q3 - Q1
+        
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+        
+        outliers = ((col_data < lower_bound) | (col_data > upper_bound)).sum()
+        validity = 1 - (outliers / len(col_data))
+        validity_scores.append(validity)
+    
+    return np.mean(validity_scores) if validity_scores else 1.0
+
+def identify_issues(
+    df: pd.DataFrame, 
+    completeness: float, 
+    uniqueness: float, 
+    validity: float
+) -> List[dict]:
+    """Identify specific data quality issues"""
+    issues = []
+    
+    # Missing values
+    for col in df.columns:
+        missing = df[col].isnull().sum()
+        if missing > 0:
+            issues.append({
+                'type': 'missing_values',
+                'severity': 'high' if missing / len(df) > 0.3 else 'medium',
+                'column': col,
+                'count': int(missing),
+                'message': f"{missing} missing values in '{col}' ({(missing/len(df)*100):.1f}%)"
+            })
+    
+    # Duplicates
+    duplicates = df.duplicated().sum()
+    if duplicates > 0:
+        issues.append({
+            'type': 'duplicates',
+            'severity': 'medium',
+            'count': int(duplicates),
+            'message': f"{duplicates} duplicate rows found"
+        })
+    
+    # Outliers
+    for col in df.select_dtypes(include=[np.number]).columns:
+        col_data = df[col].dropna()
+        if len(col_data) < 10:
+            continue
+        
+        Q1 = col_data.quantile(0.25)
+        Q3 = col_data.quantile(0.75)
+        IQR = Q3 - Q1
+        outliers = ((col_data < Q1 - 1.5 * IQR) | (col_data > Q3 + 1.5 * IQR)).sum()
+        
+        if outliers > 0:
+            issues.append({
+                'type': 'outliers',
+                'severity': 'low',
+                'column': col,
+                'count': int(outliers),
+                'message': f"{outliers} potential outliers in '{col}'"
+            })
+    
+    return issues
+
+def generate_recommendations(issues: List[dict]) -> List[str]:
+    """Generate actionable recommendations"""
+    recommendations = []
+    
+    for issue in issues:
+        if issue['type'] == 'missing_values':
+            if issue['severity'] == 'high':
+                recommendations.append(
+                    f"Consider dropping '{issue['column']}' column or imputing missing values"
+                )
+            else:
+                recommendations.append(
+                    f"Impute missing values in '{issue['column']}' using median/mode"
+                )
+        
+        elif issue['type'] == 'duplicates':
+            recommendations.append("Remove duplicate rows to improve data quality")
+        
+        elif issue['type'] == 'outliers':
+            recommendations.append(
+                f"Review outliers in '{issue['column']}' - consider capping or removal"
+            )
+    
+    return recommendations
+```
+
+#### 4. Data Operation Functions
+
+```python
+# core/data_processor.py
+
+import pandas as pd
+from sklearn.impute import KNNImputer
+from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from typing import Tuple, Dict, List
+
+class DataProcessor:
+    """Core data processing operations"""
+    
+    @staticmethod
+    def remove_duplicates(df: pd.DataFrame) -> Tuple[pd.DataFrame, dict]:
+        """Remove duplicate rows"""
+        before = len(df)
+        df_clean = df.drop_duplicates()
+        after = len(df_clean)
+        
+        return df_clean, {
+            'rows_removed': before - after,
+            'rows_before': before,
+            'rows_after': after
+        }
+    
+    @staticmethod
+    def impute_missing(
+        df: pd.DataFrame,
+        columns: List[str],
+        method: str = 'median'
+    ) -> Tuple[pd.DataFrame, dict]:
+        """Impute missing values"""
+        df_clean = df.copy()
+        results = {}
+        
+        for col in columns:
+            if col not in df.columns:
+                continue
+            
+            missing_before = df[col].isnull().sum()
+            
+            if method == 'mean' and pd.api.types.is_numeric_dtype(df[col]):
+                df_clean[col].fillna(df[col].mean(), inplace=True)
+            
+            elif method == 'median' and pd.api.types.is_numeric_dtype(df[col]):
+                df_clean[col].fillna(df[col].median(), inplace=True)
+            
+            elif method == 'mode':
+                df_clean[col].fillna(df[col].mode()[0], inplace=True)
+            
+            elif method == 'forward_fill':
+                df_clean[col].fillna(method='ffill', inplace=True)
+            
+            elif method == 'backward_fill':
+                df_clean[col].fillna(method='bfill', inplace=True)
+            
+            elif method == 'knn' and pd.api.types.is_numeric_dtype(df[col]):
+                imputer = KNNImputer(n_neighbors=5)
+                df_clean[col] = imputer.fit_transform(df[[col]])
+            
+            missing_after = df_clean[col].isnull().sum()
+            
+            results[col] = {
+                'missing_before': int(missing_before),
+                'missing_after': int(missing_after),
+                'imputed': int(missing_before - missing_after),
+                'method': method
+            }
+        
+        return df_clean, results
+    
+    @staticmethod
+    def remove_outliers(
+        df: pd.DataFrame,
+        columns: List[str],
+        method: str = 'iqr',
+        threshold: float = 1.5
+    ) -> Tuple[pd.DataFrame, dict]:
+        """Detect and remove outliers"""
+        df_clean = df.copy()
+        rows_before = len(df_clean)
+        outliers_by_column = {}
+        
+        for col in columns:
+            if col not in df.columns or not pd.api.types.is_numeric_dtype(df[col]):
+                continue
+            
+            if method == 'iqr':
+                Q1 = df_clean[col].quantile(0.25)
+                Q3 = df_clean[col].quantile(0.75)
+                IQR = Q3 - Q1
+                lower = Q1 - threshold * IQR
+                upper = Q3 + threshold * IQR
+                
+                mask = (df_clean[col] >= lower) & (df_clean[col] <= upper)
+                outliers_count = (~mask).sum()
+                df_clean = df_clean[mask]
+            
+            elif method == 'zscore':
+                z_scores = np.abs((df_clean[col] - df_clean[col].mean()) / df_clean[col].std())
+                mask = z_scores < threshold
+                outliers_count = (~mask).sum()
+                df_clean = df_clean[mask]
+            
+            elif method == 'isolation_forest':
+                iso_forest = IsolationForest(contamination=0.1, random_state=42)
+                predictions = iso_forest.fit_predict(df_clean[[col]].dropna())
+                mask = predictions != -1
+                outliers_count = (~mask).sum()
+                df_clean = df_clean[df_clean.index.isin(df_clean.index[mask])]
+            
+            outliers_by_column[col] = int(outliers_count)
+        
+        rows_after = len(df_clean)
+        
+        return df_clean, {
+            'method': method,
+            'rows_before': rows_before,
+            'rows_after': rows_after,
+            'total_removed': rows_before - rows_after,
+            'outliers_by_column': outliers_by_column
+        }
+    
+    @staticmethod
+    def encode_categorical(
+        df: pd.DataFrame,
+        columns: List[str],
+        method: str = 'label'
+    ) -> Tuple[pd.DataFrame, dict]:
+        """Encode categorical variables"""
+        df_clean = df.copy()
+        results = {}
+        
+        for col in columns:
+            if col not in df.columns:
+                continue
+            
+            if method == 'label':
+                le = LabelEncoder()
+                df_clean[col] = le.fit_transform(df_clean[col].astype(str))
+                results[col] = {
+                    'method': 'label',
+                    'unique_values': len(le.classes_),
+                    'classes': le.classes_.tolist()[:10]  # First 10 classes
+                }
+            
+            elif method == 'onehot':
+                dummies = pd.get_dummies(df_clean[col], prefix=col)
+                df_clean = pd.concat([df_clean, dummies], axis=1)
+                df_clean.drop(col, axis=1, inplace=True)
+                results[col] = {
+                    'method': 'onehot',
+                    'new_columns': dummies.columns.tolist()
+                }
+        
+        return df_clean, results
+```
+
+### Frontend Implementation Details
+
+#### 1. Supabase Auth Setup
+
+```typescript
+// src/services/supabase.ts
+
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
+
+// Auth helper functions
+export const authService = {
+  async signUp(email: string, password: string) {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async signIn(email: string, password: string) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async signInWithGoogle() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`
+      }
+    });
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async signInWithGithub() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`
+      }
+    });
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async signOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  },
+
+  async getSession() {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    return data.session;
+  },
+
+  onAuthStateChange(callback: (user: any) => void) {
+    return supabase.auth.onAuthStateChange((_event, session) => {
+      callback(session?.user ?? null);
+    });
+  }
+};
+```
+
+#### 2. API Service Layer
+
+```typescript
+// src/services/api.ts
+
+import axios from 'axios';
+import { supabase } from './supabase';
+
+const API_URL = import.meta.env.VITE_API_URL;
+
+// Create axios instance
+const apiClient = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add auth token to requests
+apiClient.interceptors.request.use(async (config) => {
+  const session = await supabase.auth.getSession();
+  const token = session.data.session?.access_token;
+  
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  
+  return config;
+});
+
+// API methods
+export const api = {
+  // Sessions
+  async createSession() {
+    const response = await apiClient.post('/sessions/new');
+    return response.data;
+  },
+
+  async getSessions() {
+    const response = await apiClient.get('/sessions');
+    return response.data;
+  },
+
+  async deleteSession(sessionId: string) {
+    const response = await apiClient.delete(`/sessions/${sessionId}`);
+    return response.data;
+  },
+
+  // Chat
+  async sendMessage(sessionId: string, message: string, model: 'groq' | 'gemini' = 'groq') {
+    const response = await apiClient.post('/chat', {
+      session_id: sessionId,
+      message,
+      model
+    });
+    return response.data;
+  },
+
+  async getChatHistory(sessionId: string) {
+    const response = await apiClient.get(`/sessions/${sessionId}/history`);
+    return response.data;
+  },
+
+  // File upload
+  async uploadFile(sessionId: string, file: File, onProgress?: (progress: number) => void) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('session_id', sessionId);
+
+    const response = await apiClient.post('/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          onProgress(percentCompleted);
+        }
+      },
+    });
+
+    return response.data;
+  },
+
+  // Export
+  async exportData(sessionId: string, format: string, filename: string) {
+    const response = await apiClient.post('/export', {
+      session_id: sessionId,
+      format,
+      filename
+    });
+    return response.data;
+  },
+
+  // Templates
+  async saveTemplate(template: any) {
+    const response = await apiClient.post('/templates', template);
+    return response.data;
+  },
+
+  async getTemplates() {
+    const response = await apiClient.get('/templates');
+    return response.data;
+  },
+
+  // Quality
+  async getQualityScore(sessionId: string) {
+    const response = await apiClient.get(`/quality/${sessionId}`);
+    return response.data;
+  },
+};
+
+export default api;
+```
+
+#### 3. Type Definitions
+
+```typescript
+// src/types/index.ts
+
+export interface User {
+  id: string;
+  email: string;
+  created_at: string;
+}
+
+export interface Session {
+  id: string;
+  session_id: string;
+  user_id: string;
+  dataset_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+  attachments?: Attachment[];
+  actions?: SuggestedAction[];
+  chartData?: string;
+}
+
+export interface Attachment {
+  type: 'data_preview' | 'chart' | 'file' | 'report';
+  data: any;
+}
+
+export interface SuggestedAction {
+  label: string;
+  prompt: string;
+}
+
+export interface DataPreview {
+  columns: string[];
+  data: Record<string, any>[];
+  shape: [number, number];
+}
+
+export interface QualityMetrics {
+  overall_score: number;
+  completeness: number;
+  consistency: number;
+  uniqueness: number;
+  validity: number;
+  column_metrics: Record<string, ColumnMetric>;
+  issues: Issue[];
+  recommendations: string[];
+}
+
+export interface ColumnMetric {
+  missing_pct: number;
+  unique_count: number;
+  dtype: string;
+  sample_values: any[];
+}
+
+export interface Issue {
+  type: string;
+  severity: 'low' | 'medium' | 'high';
+  column?: string;
+  count: number;
+  message: string;
+}
+
+export interface Template {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  operations: any[];
+  is_public: boolean;
+  created_at: string;
+}
+```
+
+---
+
+## 🚀 Deployment Instructions
+
+### Backend Deployment (Railway)
+
+1. Create Railway account and new project
+2. Connect GitHub repository
+3. Add environment variables

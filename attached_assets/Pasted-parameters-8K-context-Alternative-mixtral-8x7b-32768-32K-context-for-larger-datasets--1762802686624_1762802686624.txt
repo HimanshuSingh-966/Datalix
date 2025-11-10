@@ -1,0 +1,919 @@
+parameters, 8K context)
+  - Alternative: `mixtral-8x7b-32768` (32K context for larger datasets)
+- ✅ **Configuration Parameters**:
+  - Temperature: 0.1-0.3 (deterministic for data operations)
+  - Max tokens: 1000-2000
+  - Response format: JSON for structured data
+  - Top_p: 0.9
+  - Frequency penalty: 0.0
+  - Presence penalty: 0.0
+- ✅ **Primary Use Cases**:
+  - Fast data cleaning commands (< 2 seconds response)
+  - Quick data transformations
+  - Visualization generation
+  - Export operations
+  - Filter and selection queries
+  - Simple statistical calculations
+- ✅ **Function Calling Setup** (11 Functions):
+
+**Function 1: upload_and_analyze_data**
+```python
+{
+    "name": "upload_and_analyze_data",
+    "description": "Upload and analyze a dataset file",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "file_path": {"type": "string"},
+            "encoding": {"type": "string", "enum": ["utf-8", "latin-1", "iso-8859-1"]}
+        },
+        "required": ["file_path"]
+    }
+}
+# Returns:
+{
+    "dataset_info": {
+        "rows": 1250,
+        "columns": 8,
+        "size_mb": 0.5,
+        "column_names": ["id", "name", "age", "salary", ...],
+        "column_types": {"id": "int64", "name": "object", ...}
+    },
+    "quality_score": 67.5,
+    "preview": [...],  # First 10 rows
+    "issues": [
+        {"type": "missing_values", "column": "age", "count": 89},
+        {"type": "duplicates", "count": 12},
+        {"type": "outliers", "column": "price", "count": 45}
+    ]
+}
+```
+
+**Function 2: clean_dataset**
+```python
+{
+    "name": "clean_dataset",
+    "description": "Clean dataset with multiple operations",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "operations": {
+                "type": "array",
+                "items": {"type": "string", "enum": [
+                    "remove_duplicates",
+                    "impute_missing",
+                    "remove_outliers",
+                    "normalize_text"
+                ]}
+            },
+            "columns": {"type": "array", "items": {"type": "string"}},
+            "methods": {"type": "object"}
+        },
+        "required": ["operations"]
+    }
+}
+# Returns:
+{
+    "results": {
+        "duplicates_removed": 12,
+        "missing_imputed": 89,
+        "outliers_removed": 45
+    },
+    "new_quality_score": 94.2,
+    "rows_before": 1250,
+    "rows_after": 1193
+}
+```
+
+**Function 3: impute_missing_values**
+```python
+{
+    "name": "impute_missing_values",
+    "description": "Impute missing values in specified columns",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "columns": {"type": "array", "items": {"type": "string"}},
+            "method": {
+                "type": "string",
+                "enum": ["mean", "median", "mode", "knn", "forward_fill", "backward_fill"]
+            },
+            "knn_neighbors": {"type": "integer", "default": 5}
+        },
+        "required": ["columns", "method"]
+    }
+}
+```
+
+**Function 4: detect_and_remove_outliers**
+```python
+{
+    "name": "detect_and_remove_outliers",
+    "description": "Detect and remove outliers using various methods",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "columns": {"type": "array", "items": {"type": "string"}},
+            "method": {
+                "type": "string",
+                "enum": ["iqr", "zscore", "isolation_forest", "dbscan"]
+            },
+            "threshold": {"type": "number", "default": 1.5}
+        },
+        "required": ["columns", "method"]
+    }
+}
+```
+
+**Function 5: create_visualization**
+```python
+{
+    "name": "create_visualization",
+    "description": "Create interactive chart visualization",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "chart_type": {
+                "type": "string",
+                "enum": ["histogram", "scatter", "line", "bar", "box", "heatmap", "pie"]
+            },
+            "x_column": {"type": "string"},
+            "y_column": {"type": "string"},
+            "color_by": {"type": "string"},
+            "title": {"type": "string"}
+        },
+        "required": ["chart_type"]
+    }
+}
+# Returns: Plotly JSON chart data
+```
+
+**Function 6: get_statistics**
+```python
+{
+    "name": "get_statistics",
+    "description": "Calculate statistical metrics",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "columns": {"type": "array", "items": {"type": "string"}},
+            "stats": {
+                "type": "array",
+                "items": {"type": "string", "enum": [
+                    "mean", "median", "std", "min", "max", "count", "correlation"
+                ]}
+            }
+        }
+    }
+}
+```
+
+**Function 7: filter_data**
+```python
+{
+    "name": "filter_data",
+    "description": "Filter dataset based on conditions",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "conditions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "column": {"type": "string"},
+                        "operator": {"type": "string", "enum": [">", "<", "==", "!=", ">=", "<=", "contains"]},
+                        "value": {}
+                    }
+                }
+            },
+            "logic": {"type": "string", "enum": ["AND", "OR"], "default": "AND"}
+        },
+        "required": ["conditions"]
+    }
+}
+```
+
+**Function 8: encode_categorical**
+```python
+{
+    "name": "encode_categorical",
+    "description": "Encode categorical variables",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "columns": {"type": "array", "items": {"type": "string"}},
+            "method": {
+                "type": "string",
+                "enum": ["label", "onehot", "ordinal", "target"]
+            }
+        },
+        "required": ["columns", "method"]
+    }
+}
+```
+
+**Function 9: export_data**
+```python
+{
+    "name": "export_data",
+    "description": "Export processed dataset",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "format": {
+                "type": "string",
+                "enum": ["csv", "excel", "json", "parquet"]
+            },
+            "filename": {"type": "string"}
+        },
+        "required": ["format"]
+    }
+}
+# Returns: download URL (signed, 1-hour expiry)
+```
+
+**Function 10: generate_quality_report**
+```python
+{
+    "name": "generate_quality_report",
+    "description": "Generate comprehensive quality report",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "include_recommendations": {"type": "boolean", "default": true}
+        }
+    }
+}
+```
+
+**Function 11: run_ml_analysis**
+```python
+{
+    "name": "run_ml_analysis",
+    "description": "Run machine learning analysis",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "analysis_type": {
+                "type": "string",
+                "enum": ["anomaly_detection", "clustering", "dimensionality_reduction", "feature_importance"]
+            },
+            "algorithm": {"type": "string"},
+            "parameters": {"type": "object"}
+        },
+        "required": ["analysis_type"]
+    }
+}
+```
+
+**🔧 Groq Service Implementation:**
+```python
+# services/groq_service.py
+from groq import Groq
+import json
+
+class GroqService:
+    def __init__(self, api_key: str):
+        self.client = Groq(api_key=api_key)
+        self.model = "llama3-70b-8192"
+        
+    async def process(self, message: str, session: DataSession):
+        # Define available functions
+        functions = [
+            # All 11 functions defined above
+        ]
+        
+        # Send request with function calling
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": self._get_system_prompt()},
+                {"role": "user", "content": message}
+            ],
+            functions=functions,
+            function_call="auto",
+            temperature=0.2,
+            max_tokens=1500
+        )
+        
+        # Parse function calls
+        message_response = response.choices[0].message
+        
+        if message_response.function_call:
+            function_name = message_response.function_call.name
+            function_args = json.loads(message_response.function_call.arguments)
+            
+            # Execute function
+            result = await self._execute_function(
+                function_name, 
+                function_args, 
+                session
+            )
+            
+            return {
+                "message": self._format_response(result),
+                "function_calls": [function_name],
+                "results": result,
+                "data_preview": result.get("preview"),
+                "chart_data": result.get("chart_data"),
+                "suggested_actions": self._generate_suggestions(result)
+            }
+        
+        return {"message": message_response.content}
+    
+    def _get_system_prompt(self):
+        return """You are a data analysis assistant. Help users clean, analyze, and visualize their data.
+        
+Available operations:
+- Upload and analyze datasets
+- Clean data (remove duplicates, handle missing values, remove outliers)
+- Transform data (encode categories, scale values)
+- Analyze data (statistics, correlations)
+- Visualize data (charts and graphs)
+- Export results
+
+Always use function calls to perform operations. Provide clear explanations of what you're doing."""
+    
+    async def _execute_function(self, name: str, args: dict, session: DataSession):
+        # Map function names to actual implementation
+        if name == "upload_and_analyze_data":
+            return await self._upload_and_analyze(args, session)
+        elif name == "clean_dataset":
+            return await self._clean_dataset(args, session)
+        # ... other functions
+    
+    def _generate_suggestions(self, result: dict) -> list:
+        suggestions = []
+        
+        if "issues" in result:
+            if any(issue["type"] == "missing_values" for issue in result["issues"]):
+                suggestions.append({
+                    "label": "Impute Missing Values",
+                    "prompt": "Impute missing values using median"
+                })
+            if any(issue["type"] == "duplicates" for issue in result["issues"]):
+                suggestions.append({
+                    "label": "Remove Duplicates",
+                    "prompt": "Remove duplicate rows"
+                })
+            if any(issue["type"] == "outliers" for issue in result["issues"]):
+                suggestions.append({
+                    "label": "Remove Outliers",
+                    "prompt": "Remove outliers using IQR method"
+                })
+        
+        suggestions.extend([
+            {"label": "Show Statistics", "prompt": "Show statistical summary"},
+            {"label": "Create Visualization", "prompt": "Create a histogram"},
+            {"label": "Export Data", "prompt": "Export as CSV"}
+        ])
+        
+        return suggestions[:4]  # Return top 4 suggestions
+```
+
+---
+
+### **2.2 GOOGLE GEMINI API INTEGRATION**
+
+**📍 Include These:**
+- ✅ **Model Selection**:
+  - Fast: `gemini-1.5-flash` (quick responses, lower cost)
+  - Advanced: `gemini-1.5-pro` (complex reasoning, higher accuracy)
+- ✅ **Configuration Parameters**:
+  - Temperature: 0.3-0.5 (balanced creativity)
+  - Max tokens: 2048-4096
+  - Top_p: 0.95
+  - Top_k: 40
+- ✅ **Primary Use Cases**:
+  - **Natural Language Data Queries**:
+    - "What's the average age of customers from New York?"
+    - "Find all products with sales > $1000 and rating > 4.5"
+    - "Which department has the highest turnover rate?"
+  - **Intelligent Recommendations**:
+    - Analyze entire dataset context
+    - Suggest optimal cleaning workflow
+    - Prioritize operations by impact
+    - Recommend best visualization types
+  - **Dashboard Generation**:
+    - "Create a sales dashboard"
+    - Generate layout with appropriate widgets
+    - Return configuration JSON
+  - **Quality Reports**:
+    - Generate comprehensive narrative reports
+    - Explain issues in natural language
+    - Provide actionable recommendations with reasoning
+  - **Conversational Context**:
+    - Maintain conversation memory across messages
+    - Understand follow-up questions ("What about last month?")
+    - Provide guidance and educational content
+
+**🔧 Gemini Service Implementation:**
+```python
+# services/gemini_service.py
+import google.generativeai as genai
+
+class GeminiService:
+    def __init__(self, api_key: str):
+        genai.configure(api_key=api_key)
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        
+    async def process(self, message: str, session: DataSession):
+        # Build context with dataset information
+        context = self._build_context(session)
+        
+        # Generate prompt
+        prompt = f"""Context: {context}
+
+User Query: {message}
+
+If this query requires data manipulation, generate Python pandas code to execute.
+If it's an analytical question, provide insights based on the data.
+If it's asking for recommendations, analyze the data quality and suggest improvements.
+
+Format your response as:
+1. Explanation of what you're doing
+2. Code (if applicable) wrapped in ```python blocks
+3. Expected results or insights
+4. Suggested next steps"""
+        
+        # Generate response
+        response = self.model.generate_content(
+            prompt,
+            generation_config={
+                'temperature': 0.4,
+                'top_p': 0.95,
+                'top_k': 40,
+                'max_output_tokens': 2048
+            }
+        )
+        
+        # Parse response
+        text = response.text
+        code_blocks = self._extract_code_blocks(text)
+        
+        # Execute code if present
+        results = None
+        if code_blocks:
+            results = await self._execute_code(code_blocks[0], session)
+        
+        return {
+            "message": text,
+            "code": code_blocks[0] if code_blocks else None,
+            "results": results,
+            "suggested_actions": self._generate_suggestions(text)
+        }
+    
+    def _build_context(self, session: DataSession) -> str:
+        if session.df is None:
+            return "No dataset loaded."
+        
+        df = session.df
+        context = f"""Dataset Information:
+- Shape: {df.shape[0]} rows × {df.shape[1]} columns
+- Columns: {', '.join(df.columns.tolist())}
+- Data Types: {df.dtypes.to_dict()}
+- Missing Values: {df.isnull().sum().to_dict()}
+- Sample Data:
+{df.head(3).to_string()}
+
+Quality Score: {session.metadata.get('quality_score', 'Not calculated')}
+"""
+        return context
+    
+    def _extract_code_blocks(self, text: str) -> list:
+        import re
+        pattern = r'```python\n(.*?)\n```'
+        return re.findall(pattern, text, re.DOTALL)
+    
+    async def _execute_code(self, code: str, session: DataSession):
+        # Safely execute pandas code
+        df = session.df
+        local_vars = {'df': df, 'pd': pd, 'np': np}
+        
+        try:
+            exec(code, local_vars)
+            result = local_vars.get('result', None)
+            return result
+        except Exception as e:
+            return {"error": str(e)}
+```
+
+---
+
+### **2.3 AI ORCHESTRATION STRATEGY**
+
+**📍 Include These:**
+- ✅ **Auto-Routing Logic**:
+  - Analyze user message intent
+  - Route simple operations to Groq (fast)
+  - Route complex queries to Gemini (smart)
+  - Allow manual model selection
+
+**🔧 AI Orchestrator Implementation:**
+```python
+# services/ai_service.py
+
+class AIOrchestrator:
+    def __init__(self, groq_key: str, gemini_key: str):
+        self.groq = GroqService(groq_key)
+        self.gemini = GeminiService(gemini_key)
+        
+        # Keywords for simple operations (use Groq)
+        self.simple_keywords = [
+            'remove', 'delete', 'drop', 'clean', 'impute', 'fill',
+            'filter', 'select', 'export', 'download', 'save',
+            'chart', 'plot', 'graph', 'histogram', 'scatter',
+            'encode', 'transform', 'convert', 'scale', 'normalize'
+        ]
+        
+        # Keywords for complex analysis (use Gemini)
+        self.complex_keywords = [
+            'why', 'how', 'explain', 'analyze', 'insight', 'recommend',
+            'suggest', 'predict', 'forecast', 'compare', 'evaluate',
+            'dashboard', 'report', 'summarize', 'what if', 'trend'
+        ]
+    
+    async def process_message(
+        self, 
+        message: str, 
+        session: DataSession,
+        model_preference: str = "auto"
+    ):
+        # Manual selection
+        if model_preference == "groq":
+            return await self.groq.process(message, session)
+        elif model_preference == "gemini":
+            return await self.gemini.process(message, session)
+        
+        # Auto-routing based on message analysis
+        message_lower = message.lower()
+        
+        # Check for simple operation keywords
+        simple_score = sum(1 for kw in self.simple_keywords if kw in message_lower)
+        complex_score = sum(1 for kw in self.complex_keywords if kw in message_lower)
+        
+        # Decision logic
+        if simple_score > complex_score:
+            return await self.groq.process(message, session)
+        elif complex_score > simple_score:
+            return await self.gemini.process(message, session)
+        else:
+            # Check message length and structure
+            if len(message.split()) < 10 and any(op in message_lower for op in ['show', 'get', 'list']):
+                return await self.groq.process(message, session)
+            else:
+                return await self.gemini.process(message, session)
+    
+    async def process_with_fallback(self, message: str, session: DataSession):
+        """Try primary model, fallback to secondary on failure"""
+        try:
+            # Try auto-routing first
+            return await self.process_message(message, session, "auto")
+        except Exception as e:
+            # Fallback to Gemini for complex interpretation
+            try:
+                return await self.gemini.process(message, session)
+            except Exception as e2:
+                # Last resort: Groq with error handling
+                return {
+                    "message": "I encountered an error processing your request. Please try rephrasing.",
+                    "error": str(e2)
+                }
+```
+
+---
+
+## 📊 **SECTION 3: VISUALIZATION & CHARTING**
+
+### **3.1 CHART TYPES (INTERACTIVE PLOTLY)**
+
+**📍 Include These 18 Chart Types:**
+
+**Basic Charts (7 - Your Requirements):**
+1. ✅ **Histogram** - Distribution of numeric data
+   - Single variable distribution
+   - Bin size customization
+   - Overlay multiple histograms
+   - Density curve overlay
+
+2. ✅ **Scatter Plot** - Correlation between two variables
+   - X vs Y plotting
+   - Color by category
+   - Size by variable (bubble effect)
+   - Trend line overlay
+
+3. ✅ **Line Chart** - Time series and trends
+   - Single or multiple lines
+   - Date/time x-axis
+   - Moving average overlay
+   - Area fill
+
+4. ✅ **Bar Chart** - Categorical comparisons
+   - Vertical or horizontal
+   - Grouped bars
+   - Stacked bars
+   - Sorted by value
+
+5. ✅ **Box Plot** - Statistical distribution and outliers
+   - Quartile visualization
+   - Outlier points
+   - Multiple groups comparison
+   - Violin overlay option
+
+6. ✅ **Heatmap** - Correlation matrix visualization
+   - Color gradient mapping
+   - Annotation with values
+   - Hierarchical clustering
+   - Custom color scales
+
+7. ✅ **Pie Chart** - Proportion visualization
+   - Percentage labels
+   - Exploded slices
+   - Donut chart variant
+   - Multiple pies (subplots)
+
+**Advanced Charts (11 - Enhancements):**
+8. ✅ **Violin Plot** - Distribution comparison
+9. ✅ **Area Chart** - Cumulative trends
+10. ✅ **Bubble Chart** - 3-variable relationships
+11. ✅ **3D Scatter** - Multi-dimensional data
+12. ✅ **Waterfall Chart** - Sequential changes
+13. ✅ **Sunburst Chart** - Hierarchical data
+14. ✅ **Treemap** - Nested proportions
+15. ✅ **Gantt Chart** - Timeline visualization
+16. ✅ **Sankey Diagram** - Flow visualization
+17. ✅ **Network Graph** - Relationship mapping
+18. ✅ **Candlestick Chart** - Financial data (OHLC)
+
+**🔧 Visualization Implementation:**
+```python
+# core/visualization.py
+import plotly.graph_objects as go
+import plotly.express as px
+import json
+
+def create_plotly_chart(df: pd.DataFrame, chart_type: str, **kwargs) -> str:
+    """Generate Plotly chart and return JSON string"""
+    
+    if chart_type == 'histogram':
+        fig = px.histogram(
+            df,
+            x=kwargs.get('x_column'),
+            nbins=kwargs.get('bins', 30),
+            title=kwargs.get('title', 'Histogram'),
+            color=kwargs.get('color_by'),
+            marginal=kwargs.get('marginal', None)  # 'box', 'violin', 'rug'
+        )
+    
+    elif chart_type == 'scatter':
+        fig = px.scatter(
+            df,
+            x=kwargs.get('x_column'),
+            y=kwargs.get('y_column'),
+            color=kwargs.get('color_by'),
+            size=kwargs.get('size_by'),
+            hover_data=kwargs.get('hover_columns', []),
+            title=kwargs.get('title', 'Scatter Plot'),
+            trendline=kwargs.get('trendline', None)  # 'ols', 'lowess'
+        )
+    
+    elif chart_type == 'line':
+        fig = px.line(
+            df,
+            x=kwargs.get('x_column'),
+            y=kwargs.get('y_column'),
+            color=kwargs.get('color_by'),
+            title=kwargs.get('title', 'Line Chart'),
+            markers=kwargs.get('show_markers', True)
+        )
+    
+    elif chart_type == 'bar':
+        fig = px.bar(
+            df,
+            x=kwargs.get('x_column'),
+            y=kwargs.get('y_column'),
+            color=kwargs.get('color_by'),
+            title=kwargs.get('title', 'Bar Chart'),
+            orientation=kwargs.get('orientation', 'v'),  # 'v' or 'h'
+            barmode=kwargs.get('barmode', 'group')  # 'group', 'stack', 'relative'
+        )
+    
+    elif chart_type == 'box':
+        fig = px.box(
+            df,
+            x=kwargs.get('x_column'),
+            y=kwargs.get('y_column'),
+            color=kwargs.get('color_by'),
+            title=kwargs.get('title', 'Box Plot'),
+            points=kwargs.get('show_points', 'outliers')  # 'all', 'outliers', False
+        )
+    
+    elif chart_type == 'heatmap':
+        # Correlation matrix
+        if kwargs.get('correlation', True):
+            corr_matrix = df.select_dtypes(include=[np.number]).corr()
+            fig = go.Figure(data=go.Heatmap(
+                z=corr_matrix.values,
+                x=corr_matrix.columns,
+                y=corr_matrix.columns,
+                colorscale='RdBu',
+                zmid=0,
+                text=corr_matrix.values,
+                texttemplate='%{text:.2f}',
+                textfont={"size": 10}
+            ))
+            fig.update_layout(title='Correlation Heatmap')
+        else:
+            # Custom heatmap
+            fig = px.imshow(
+                df,
+                title=kwargs.get('title', 'Heatmap'),
+                color_continuous_scale='Viridis'
+            )
+    
+    elif chart_type == 'pie':
+        fig = px.pie(
+            df,
+            names=kwargs.get('labels_column'),
+            values=kwargs.get('values_column'),
+            title=kwargs.get('title', 'Pie Chart'),
+            hole=kwargs.get('hole', 0)  # 0 for pie, 0.4 for donut
+        )
+    
+    elif chart_type == 'violin':
+        fig = px.violin(
+            df,
+            x=kwargs.get('x_column'),
+            y=kwargs.get('y_column'),
+            color=kwargs.get('color_by'),
+            title=kwargs.get('title', 'Violin Plot'),
+            box=True,
+            points='all'
+        )
+    
+    elif chart_type == '3d_scatter':
+        fig = px.scatter_3d(
+            df,
+            x=kwargs.get('x_column'),
+            y=kwargs.get('y_column'),
+            z=kwargs.get('z_column'),
+            color=kwargs.get('color_by'),
+            title=kwargs.get('title', '3D Scatter Plot')
+        )
+    
+    # Common layout updates
+    fig.update_layout(
+        template='plotly_white',
+        hovermode='closest',
+        height=kwargs.get('height', 500),
+        showlegend=kwargs.get('show_legend', True)
+    )
+    
+    # Return as JSON string
+    return fig.to_json()
+```
+
+---
+
+### **3.2 CHART FEATURES**
+
+**📍 Include These:**
+- ✅ **Interactive Features**:
+  - Zoom (box select, wheel zoom)
+  - Pan (drag to move)
+  - Hover tooltips (show data on mouse over)
+  - Click events (select data points)
+  - Double-click to reset view
+  - Lasso select (select multiple points)
+- ✅ **Customization**:
+  - Custom color schemes (categorical, sequential, diverging)
+  - Multiple series on same chart
+  - Annotations and labels
+  - Grid lines (show/hide)
+  - Axis titles and formatting
+  - Legend positioning
+- ✅ **Export Options**:
+  - PNG export (static image)
+  - SVG export (vector graphics)
+  - PDF export
+  - HTML export (interactive)
+  - JSON data export
+- ✅ **Responsive Design**:
+  - Auto-resize to container
+  - Mobile-friendly touch gestures
+  - Configurable aspect ratio
+- ✅ **Advanced Features**:
+  - Dark mode support
+  - Animation effects (transitions)
+  - Drill-down capabilities (click to filter)
+  - Subplots (multiple charts in grid)
+  - Secondary y-axis
+  - Custom tooltips (HTML formatting)
+
+**🔧 Chart Component (Frontend):**
+```typescript
+// src/components/ChartDisplay.tsx
+import React from 'react';
+import Plot from 'react-plotly.js';
+import { Download, Maximize2 } from 'lucide-react';
+
+interface ChartDisplayProps {
+  chartData: string; // JSON string from backend
+  title?: string;
+}
+
+export const ChartDisplay: React.FC<ChartDisplayProps> = ({ chartData, title }) => {
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const chartConfig = JSON.parse(chartData);
+  
+  const handleDownload = (format: 'png' | 'svg' | 'pdf') => {
+    // Plotly download functionality
+    const filename = `chart_${Date.now()}.${format}`;
+    Plotly.downloadImage(chartConfig, {
+      format,
+      filename,
+      height: 800,
+      width: 1200
+    });
+  };
+  
+  return (
+    <div className={`chart-container ${isFullscreen ? 'fullscreen' : ''}`}>
+      <div className="chart-header">
+        {title && <h3>{title}</h3>}
+        <div className="chart-actions">
+          <button onClick={() => handleDownload('png')} title="Download PNG">
+            <Download size={16} />
+          </button>
+          <button onClick={() => setIsFullscreen(!isFullscreen)} title="Fullscreen">
+            <Maximize2 size={16} />
+          </button>
+        </div>
+      </div>
+      
+      <Plot
+        data={chartConfig.data}
+        layout={{
+          ...chartConfig.layout,
+          autosize: true,
+          responsive: true
+        }}
+        config={{
+          displayModeBar: true,
+          displaylogo: false,
+          modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+          toImageButtonOptions: {
+            format: 'png',
+            filename: 'chart',
+            height: 800,
+            width: 1200,
+            scale: 2
+          }
+        }}
+        style={{ width: '100%', height: isFullscreen ? '90vh' : '500px' }}
+        useResizeHandler={true}
+      />
+    </div>
+  );
+};
+```
+
+---
+
+## 💬 **SECTION 4: CHAT INTERFACE & UX**
+
+### **4.1 CHAT FEATURES**
+
+**📍 Include These:**
+- ✅ **Message Feed**:
+  - Real-time message display
+  - Auto-scroll to bottom on new messages
+  - Scroll lock when user scrolls up
+  - Infinite scroll for history (load more)
+  - Message timestamps (relative and absolute)
+  - Message status indicators (sending, sent, error)
+  
+- ✅ **Markdown Rendering**:
+  - **Bold text** (`**bold**`)
+  - *Italic text* (`*italic*`)
+  - `Code inline` (\`code\`)
+  - Code blocks with syntax highlighting:
+    ```python
+    df = pd.read_csv('data.csv')
+    ```
+  - Lists (bullet and numbered)
+  - Links
+  - Tables
+  - Blockquotes
+  
+- ✅ **Embedded Content**:
+  - Data preview tables (expandable)
+  - Interactive charts (Plotly)
+  - File attachments
+  - Images
+  - Quality score badges
+  - Progress indicators
+  
+- ✅ **Loading States**:
+  -

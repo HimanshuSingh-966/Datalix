@@ -1,0 +1,831 @@
+Typing animation (3 dots bouncing)
+  - Skeleton loaders for data tables
+  - Spinner for long operations
+  - Progress bars for file uploads
+  - Operation status messages
+  
+- ✅ **Error Handling**:
+  - Error message display (red banner)
+  - Retry button for failed operations
+  - Error details (expandable)
+  - Helpful error suggestions
+  
+- ✅ **Message Actions**:
+  - Copy message content (button on hover)
+  - Regenerate AI response
+  - Edit previous message
+  - Delete message
+  - Pin important messages
+  - React with emoji (optional)
+  
+- ✅ **Search & Filter**:
+  - Search messages by text
+  - Filter by date range
+  - Filter by message type (user/assistant)
+  - Filter by attachments
+  
+- ✅ **Export Chat**:
+  - Export as text file
+  - Export as PDF
+  - Export as markdown
+  - Copy entire conversation
+
+**🔧 Chat Interface Implementation:**
+```typescript
+// src/components/ChatInterface.tsx
+import React, { useState, useRef, useEffect } from 'react';
+import { MessageBubble } from './MessageBubble';
+import { DataPreview } from './DataPreview';
+import { ChartDisplay } from './ChartDisplay';
+import { SuggestedActions } from './SuggestedActions';
+import { Send, Paperclip, Loader2 } from 'lucide-react';
+import { useChatStore } from '../store/chatStore';
+import { api } from '../services/api';
+
+export const ChatInterface: React.FC = () => {
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  const { messages, sessionId, addMessage } = useChatStore();
+  
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+  
+  // Auto-expand textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [input]);
+  
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+    
+    const userMessage = {
+      id: Date.now().toString(),
+      role: 'user' as const,
+      content: input,
+      timestamp: new Date()
+    };
+    
+    addMessage(userMessage);
+    setInput('');
+    setIsLoading(true);
+    
+    try {
+      const response = await api.sendMessage(sessionId, input);
+      
+      const assistantMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant' as const,
+        content: response.message,
+        timestamp: new Date(),
+        attachments: [],
+        actions: response.suggested_actions,
+        chartData: response.chart_data
+      };
+      
+      // Add data preview if present
+      if (response.data_preview) {
+        assistantMessage.attachments.push({
+          type: 'data_preview',
+          data: response.data_preview
+        });
+      }
+      
+      addMessage(assistantMessage);
+    } catch (error) {
+      const errorMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant' as const,
+        content: 'Sorry, I encountered an error processing your request. Please try again.',
+        timestamp: new Date(),
+        error: true
+      };
+      addMessage(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+  
+  const handleSuggestedAction = (prompt: string) => {
+    setInput(prompt);
+    textareaRef.current?.focus();
+  };
+  
+  return (
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">DataLix AI</h1>
+            <p className="text-sm text-gray-500">AI-Powered Data Analysis</p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+              New Session
+            </button>
+            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+              History
+            </button>
+            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+              Profile
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Messages Feed */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+        {messages.length === 0 ? (
+          <div className="text-center py-12">
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">
+              Welcome to DataLix AI! 👋
+            </h2>
+            <p className="text-gray-500 mb-6">
+              Upload a dataset and start analyzing with natural language
+            </p>
+            <div className="grid grid-cols-2 gap-3 max-w-2xl mx-auto">
+              <button 
+                className="p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-500 text-left"
+                onClick={() => handleSuggestedAction("Upload sales_data.csv and analyze it")}
+              >
+                <div className="font-medium text-gray-900">📊 Upload Data</div>
+                <div className="text-sm text-gray-500">Start with a dataset</div>
+              </button>
+              <button 
+                className="p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-500 text-left"
+                onClick={() => handleSuggestedAction("Show me example datasets")}
+              >
+                <div className="font-medium text-gray-900">🎓 Examples</div>
+                <div className="text-sm text-gray-500">See what's possible</div>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {messages.map((message) => (
+              <div key={message.id}>
+                <MessageBubble message={message} />
+                
+                {/* Render attachments */}
+                {message.attachments?.map((attachment, idx) => (
+                  <div key={idx} className="mt-2">
+                    {attachment.type === 'data_preview' && (
+                      <DataPreview data={attachment.data} />
+                    )}
+                  </div>
+                ))}
+                
+                {/* Render chart */}
+                {message.chartData && (
+                  <div className="mt-2">
+                    <ChartDisplay chartData={message.chartData} />
+                  </div>
+                )}
+                
+                {/* Render suggested actions */}
+                {message.actions && message.actions.length > 0 && (
+                  <div className="mt-3">
+                    <SuggestedActions 
+                      actions={message.actions}
+                      onSelect={handleSuggestedAction}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            {/* Loading indicator */}
+            {isLoading && (
+              <div className="flex items-start space-x-3">
+                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                  AI
+                </div>
+                <div className="bg-white rounded-lg px-4 py-3 border border-gray-200">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+      
+      {/* Input Area */}
+      <div className="bg-white border-t border-gray-200 px-6 py-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-end space-x-3">
+            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+              <Paperclip size={20} />
+            </button>
+            
+            <div className="flex-1 relative">
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your message... (Shift+Enter for new line)"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none max-h-32"
+                rows={1}
+                disabled={isLoading}
+              />
+            </div>
+            
+            <button
+              onClick={handleSend}
+              disabled={!input.trim() || isLoading}
+              className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
+            </button>
+          </div>
+          
+          {/* Example prompts */}
+          <div className="mt-3 flex items-center space-x-2 text-sm text-gray-500">
+            <span>Examples:</span>
+            <button 
+              className="text-blue-600 hover:underline"
+              onClick={() => handleSuggestedAction("Show correlation matrix")}
+            >
+              Show correlation
+            </button>
+            <span>•</span>
+            <button 
+              className="text-blue-600 hover:underline"
+              onClick={() => handleSuggestedAction("Export as CSV")}
+            >
+              Export as CSV
+            </button>
+            <span>•</span>
+            <button 
+              className="text-blue-600 hover:underline"
+              onClick={() => handleSuggestedAction("Create a histogram of age")}
+            >
+              Create histogram
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+### **4.2 INPUT FEATURES**
+
+**📍 Include These:**
+- ✅ **Text Input**:
+  - Multi-line textarea with auto-expand
+  - Max height with scrolling (max 5-6 lines visible)
+  - Placeholder text with examples
+  - Character count (optional)
+  - Rich text editing (optional - bold, italic, code)
+  
+- ✅ **Keyboard Shortcuts**:
+  - `Enter` - Send message
+  - `Shift+Enter` - New line
+  - `Ctrl+K` - Clear input
+  - `Ctrl+/` - Show shortcuts
+  - `↑` - Edit last message
+  - `Escape` - Cancel operation
+  
+- ✅ **File Attachment**:
+  - Click to browse files
+  - Drag and drop anywhere
+  - Multiple file selection
+  - File type validation
+  - Preview attached files
+  - Remove attached files
+  
+- ✅ **Voice Input** (Enhancement):
+  - Microphone button
+  - Speech-to-text conversion
+  - Real-time transcription
+  - Language selection
+  
+- ✅ **Command Autocomplete**:
+  - Suggest operations as user types
+  - `/` prefix for commands
+  - Arrow keys to navigate suggestions
+  - Tab to complete
+  
+- ✅ **Recent Prompts**:
+  - Store last 10 prompts
+  - Quick access dropdown
+  - Search recent prompts
+  
+- ✅ **Prompt Templates**:
+  - Pre-defined common operations
+  - Custom user templates
+  - Template categories
+  - Insert template with placeholders
+  
+- ✅ **Emoji Support**:
+  - Emoji picker (optional)
+  - Unicode emoji rendering
+  - Quick emoji shortcuts (`:smile:` → 😊)
+
+---
+
+### **4.3 SUGGESTED ACTIONS**
+
+**📍 Include These:**
+- ✅ **Context-Aware Suggestions**:
+  - Based on current data state
+  - Based on previous operations
+  - Based on detected issues
+  - Based on common next steps
+  
+- ✅ **Action Types**:
+  - **Data Cleaning**: "Clean Dataset", "Remove Duplicates", "Handle Missing Values"
+  - **Analysis**: "Show Statistics", "Calculate Correlation", "Find Outliers"
+  - **Visualization**: "Create Chart", "Show Distribution", "Plot Trends"
+  - **Export**: "Download CSV", "Export to Excel", "Save to Database"
+  - **Operations**: "Undo Last", "Redo", "Reset Dataset"
+  
+- ✅ **Display Format**:
+  - Horizontal scrolling pills
+  - Max 4-5 visible at once
+  - Click to auto-fill input
+  - Hover to show tooltip
+  - Icon + text labels
+  
+- ✅ **Smart Recommendations**:
+  - If missing values detected → "Impute Missing Values"
+  - If duplicates found → "Remove Duplicates"
+  - If outliers present → "Handle Outliers"
+  - If categorical columns → "Encode Categories"
+  - If numeric columns → "Show Correlation"
+  - After cleaning → "Create Visualization"
+  - After analysis → "Export Results"
+
+**🔧 Suggested Actions Component:**
+```typescript
+// src/components/SuggestedActions.tsx
+import React from 'react';
+import { CleaningServices, Assessment, BarChart, Download, Undo } from '@mui/icons-material';
+
+interface Action {
+  label: string;
+  prompt: string;
+  icon?: string;
+}
+
+interface SuggestedActionsProps {
+  actions: Action[];
+  onSelect: (prompt: string) => void;
+}
+
+export const SuggestedActions: React.FC<SuggestedActionsProps> = ({ actions, onSelect }) => {
+  const getIcon = (label: string) => {
+    if (label.includes('Clean')) return '🧹';
+    if (label.includes('Statistics') || label.includes('Analyze')) return '📊';
+    if (label.includes('Chart') || label.includes('Visual')) return '📈';
+    if (label.includes('Export') || label.includes('Download')) return '💾';
+    if (label.includes('Undo')) return '↩️';
+    return '✨';
+  };
+  
+  return (
+    <div className="flex items-center space-x-2 overflow-x-auto pb-2">
+      <span className="text-sm text-gray-600 font-medium whitespace-nowrap">
+        Suggested:
+      </span>
+      {actions.map((action, idx) => (
+        <button
+          key={idx}
+          onClick={() => onSelect(action.prompt)}
+          className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm border border-blue-200 hover:bg-blue-100 transition-colors whitespace-nowrap flex items-center space-x-1"
+          title={action.prompt}
+        >
+          <span>{getIcon(action.label)}</span>
+          <span>{action.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+};
+```
+
+---
+
+### **4.4 DATA PREVIEW COMPONENT**
+
+**📍 Include These:**
+- ✅ **Table Display**:
+  - Compact view (10-20 rows)
+  - Column headers with data types
+  - Alternating row colors
+  - Cell borders
+  - Fixed header on scroll
+  - Sticky first column (optional)
+  
+- ✅ **Data Type Indicators**:
+  - 🔢 Numeric (int64, float64)
+  - 📝 Text (object, string)
+  - 📅 Date (datetime64)
+  - ✅ Boolean (bool)
+  - 🏷️ Category (category)
+  - Color-coded badges
+  
+- ✅ **Null Value Highlighting**:
+  - Red background for null cells
+  - "null" or "NaN" text
+  - Count of nulls per column
+  - Percentage indicator
+  
+- ✅ **Expand/Collapse**:
+  - Toggle button to show full dataset
+  - Expand to full screen
+  - Collapse to preview only
+  - Animation transition
+  
+- ✅ **Row/Column Count**:
+  - Display at top: "Showing 10 of 1,250 rows × 8 columns"
+  - Shape indicator
+  - Memory usage (optional)
+  
+- ✅ **Pagination** (for full view):
+  - Page size selector (10, 25, 50, 100)
+  - Page navigation (prev, next, page numbers)
+  - Jump to page input
+  
+- ✅ **Column Operations** (on hover):
+  - Sort ascending/descending
+  - Filter column
+  - Hide column
+  - Column statistics
+  
+- ✅ **Virtual Scrolling**:
+  - Render only visible rows
+  - Smooth scrolling performance
+  - Handle large datasets (10k+ rows)
+  
+- ✅ **Export Table**:
+  - Copy to clipboard
+  - Export as CSV
+  - Export as Excel
+  
+- ✅ **Cell Formatting**:
+  - Number formatting (decimals, commas)
+  - Date formatting
+  - Truncate long text with ellipsis
+  - Show full text on hover
+
+**🔧 Data Preview Component:**
+```typescript
+// src/components/DataPreview.tsx
+import React, { useState } from 'react';
+import { ChevronDown, ChevronUp, Maximize2, Copy } from 'lucide-react';
+
+interface DataPreviewProps {
+  data: {
+    columns: string[];
+    data: Record<string, any>[];
+    shape: [number, number];
+    dtypes?: Record<string, string>;
+  };
+}
+
+export const DataPreview: React.FC<DataPreviewProps> = ({ data }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+  
+  const getTypeIcon = (dtype: string) => {
+    if (dtype.includes('int') || dtype.includes('float')) return '🔢';
+    if (dtype.includes('datetime')) return '📅';
+    if (dtype.includes('bool')) return '✅';
+    if (dtype.includes('category')) return '🏷️';
+    return '📝';
+  };
+  
+  const getTypeColor = (dtype: string) => {
+    if (dtype.includes('int') || dtype.includes('float')) return 'bg-blue-100 text-blue-700';
+    if (dtype.includes('datetime')) return 'bg-purple-100 text-purple-700';
+    if (dtype.includes('bool')) return 'bg-green-100 text-green-700';
+    return 'bg-gray-100 text-gray-700';
+  };
+  
+  const formatValue = (value: any, dtype: string) => {
+    if (value === null || value === undefined || value === 'NaN') {
+      return <span className="text-red-600 font-medium">null</span>;
+    }
+    
+    if (dtype.includes('float')) {
+      return parseFloat(value).toFixed(2);
+    }
+    
+    if (dtype.includes('datetime')) {
+      return new Date(value).toLocaleDateString();
+    }
+    
+    if (typeof value === 'string' && value.length > 50) {
+      return (
+        <span title={value}>
+          {value.substring(0, 50)}...
+        </span>
+      );
+    }
+    
+    return value;
+  };
+  
+  const copyToClipboard = () => {
+    const csv = [
+      data.columns.join(','),
+      ...data.data.map(row => data.columns.map(col => row[col]).join(','))
+    ].join('\n');
+    
+    navigator.clipboard.writeText(csv);
+    // Show toast notification
+  };
+  
+  const displayData = isExpanded 
+    ? data.data.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+    : data.data.slice(0, 5);
+  
+  const totalPages = Math.ceil(data.data.length / pageSize);
+  
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      {/* Header */}
+      <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-b border-gray-200">
+        <div className="flex items-center space-x-3">
+          <h4 className="font-medium text-gray-900">Data Preview</h4>
+          <span className="text-sm text-gray-600">
+            Showing {displayData.length} of {data.shape[0]} rows × {data.shape[1]} columns
+          </span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={copyToClipboard}
+            className="p-1.5 text-gray-600 hover:bg-gray-200 rounded"
+            title="Copy to clipboard"
+          >
+            <Copy size={16} />
+          </button>
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-1.5 text-gray-600 hover:bg-gray-200 rounded"
+            title={isExpanded ? "Collapse" : "Expand"}
+          >
+            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+        </div>
+      </div>
+      
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr>
+              {data.columns.map((col) => (
+                <th key={col} className="px-4 py-3 text-left">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-medium text-gray-900">{col}</span>
+                    {data.dtypes && (
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${getTypeColor(data.dtypes[col])}`}>
+                        {getTypeIcon(data.dtypes[col])} {data.dtypes[col]}
+                      </span>
+                    )}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {displayData.map((row, rowIdx) => (
+              <tr key={rowIdx} className={rowIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                {data.columns.map((col) => (
+                  <td key={col} className="px-4 py-3 border-b border-gray-100">
+                    {formatValue(row[col], data.dtypes?.[col] || 'object')}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Pagination */}
+      {isExpanded && totalPages > 1 && (
+        <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200">
+          <div className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+---
+
+## 🔐 **SECTION 5: AUTHENTICATION & USER MANAGEMENT**
+
+### **5.1 AUTHENTICATION METHODS**
+
+**📍 Include These:**
+- ✅ **Email + Password**:
+  - Signup form with validation
+  - Login form
+  - Email verification (confirmation link)
+  - Password strength requirements (min 8 chars, uppercase, number, special char)
+  - Password confirmation field
+  - Show/hide password toggle
+  
+- ✅ **Social OAuth Providers**:
+  - **Google OAuth 2.0**:
+    - One-click Google Sign In
+    - Access to user profile (name, email, avatar)
+    - Automatic account creation
+  - **GitHub OAuth**:
+    - GitHub login button
+    - Repository access (optional)
+  - **Microsoft OAuth** (Enhancement):
+    - Microsoft/Office 365 login
+    - Azure AD integration
+  
+- ✅ **Passwordless Authentication** (Enhancement):
+  - **Magic Link**:
+    - Send login link to email
+    - One-click authentication
+    - Time-limited links (15 minutes)
+    - No password required
+  
+- ✅ **Two-Factor Authentication (2FA)** (Enhancement):
+  - TOTP (Time-based One-Time Password)
+  - QR code setup
+  - Backup codes
+  - SMS verification (optional)
+  
+- ✅ **Password Reset**:
+  - "Forgot Password" link
+  - Email with reset link
+  - Secure token (expires in 1 hour)
+  - New password form
+  - Confirmation message
+  
+- ✅ **Session Management**:
+  - JWT token authentication
+  - Token storage in localStorage
+  - Auto token refresh (before expiry)
+  - Session expiration (7 days default)
+  - "Remember Me" option (30 days)
+  - Logout (clear all session data)
+  
+- ✅ **Auth Flow**:
+  - Redirect to chat after successful login
+  - Preserve redirect URL (deep linking)
+  - Handle OAuth callbacks
+  - Error handling (invalid credentials, network errors)
+  - Loading states during authentication
+
+**🔧 Authentication Page Component:**
+```typescript
+// src/components/AuthPage.tsx
+import React, { useState } from 'react';
+import { authService } from '../services/supabase';
+import { useNavigate } from 'react-router-dom';
+import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+
+export const AuthPage: React.FC = () => {
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  const navigate = useNavigate();
+  
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+  
+  const validatePassword = (password: string) => {
+    return password.length >= 8 &&
+           /[A-Z]/.test(password) &&
+           /[0-9]/.test(password) &&
+           /[^A-Za-z0-9]/.test(password);
+  };
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    
+    if (mode === 'signup') {
+      if (!validatePassword(password)) {
+        setError('Password must be at least 8 characters with uppercase, number, and special character');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Passwords do not match');
+        return;
+      }
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      if (mode === 'login') {
+        await authService.signIn(email, password);
+      } else {
+        await authService.signUp(email, password);
+      }
+      navigate('/chat');
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleGoogleAuth = async () => {
+    setIsLoading(true);
+    try {
+      await authService.signInWithGoogle();
+    } catch (err: any) {
+      setError(err.message);
+      setIsLoading(false);
+    }
+  };
+  
+  const handleGithubAuth = async () => {
+    setIsLoading(true);
+    try {
+      await authService.signInWithGithub();
+    } catch (err: any) {
+      setError(err.message);
+      setIsLoading(false);
+    }
+  };
+  
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">DataLix AI</h1>
+          <p className="text-gray-600">AI-Powered Data Analysis Platform</p>
+        </div>
+        
+        {/* Toggle */}
+        <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
+          <button
+            className={`flex-1 py-2 rounded-md transition-colors ${
+              mode === 'login' ? 'bg-white shadow text-gray-900' : 'text-gray-600'
+            }`}
+            onClick={() => setMode('login')}
+          >
+            Login
+          </button>
+          <button
+            className={`flex-1 py-2 rounded-md transition-colors ${
+              mode === 'signup' ? 'bg-white shadow text-gray-900' : 'text-gray-600'
+            }`}
