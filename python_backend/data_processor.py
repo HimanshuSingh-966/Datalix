@@ -135,6 +135,30 @@ class DataProcessor:
         df = self.get_dataframe(session_id)
         return calculate_correlation(df, columns)
     
+    def detect_missing_values(self, session_id: str) -> Dict:
+        """Detect and return columns with missing values"""
+        df = self.get_dataframe(session_id)
+        
+        missing_info = []
+        total_rows = len(df)
+        
+        for col in df.columns:
+            missing_count = df[col].isnull().sum()
+            if missing_count > 0:
+                missing_percentage = (missing_count / total_rows) * 100
+                missing_info.append({
+                    "column": col,
+                    "missing_count": int(missing_count),
+                    "missing_percentage": round(missing_percentage, 2),
+                    "data_type": str(df[col].dtype)
+                })
+        
+        return {
+            "total_rows": total_rows,
+            "columns_with_missing": len(missing_info),
+            "missing_data": missing_info
+        }
+    
     def create_visualization(
         self,
         session_id: str,

@@ -57,6 +57,14 @@ class AIService:
                         )
                     ),
                     glm.FunctionDeclaration(
+                        name="detect_missing_values",
+                        description="Show all columns that have missing/null values with counts and percentages",
+                        parameters=glm.Schema(
+                            type=glm.Type.OBJECT,
+                            properties={}
+                        )
+                    ),
+                    glm.FunctionDeclaration(
                         name="create_visualization",
                         description="Create charts: histogram, scatter, line, bar, box, violin, heatmap, correlation, pie",
                         parameters=glm.Schema(
@@ -169,16 +177,48 @@ class AIService:
         # Get dataset info for context
         try:
             df = self.data_processor.get_dataframe(session_id)
+            
+            # Get missing value info
+            missing_info = []
+            for col in df.columns:
+                missing_count = df[col].isnull().sum()
+                if missing_count > 0:
+                    missing_pct = (missing_count / len(df)) * 100
+                    missing_info.append(f"{col}: {missing_count} ({missing_pct:.1f}%)")
+            
+            # Get numeric column stats preview
+            numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
+            stats_preview = []
+            for col in numeric_cols[:5]:
+                stats_preview.append(f"{col}: min={df[col].min():.2f}, max={df[col].max():.2f}, mean={df[col].mean():.2f}")
+            
             dataset_context = f"""
-You are analyzing a dataset with:
-- {len(df)} rows
-- {len(df.columns)} columns
-- Column names: {', '.join(df.columns.tolist())}
-- Column types: {', '.join([f"{col} ({df[col].dtype})" for col in df.columns[:10]])}
+You are analyzing a dataset with the following ACTUAL data:
 
-The user wants: {message}
+DATASET OVERVIEW:
+- Total rows: {len(df)}
+- Total columns: {len(df.columns)}
+- File size: {df.memory_usage(deep=True).sum() / 1024 / 1024:.2f} MB
 
-Analyze what they need and call the appropriate function(s) to help them.
+COLUMNS ({len(df.columns)} total):
+{chr(10).join([f"- {col} ({df[col].dtype}): {df[col].nunique()} unique values" for col in df.columns])}
+
+MISSING VALUES:
+{chr(10).join([f"- {info}" for info in missing_info]) if missing_info else "- No missing values found"}
+
+NUMERIC COLUMNS PREVIEW:
+{chr(10).join([f"- {stat}" for stat in stats_preview]) if stats_preview else "- No numeric columns"}
+
+DATA PREVIEW (first 3 rows):
+{df.head(3).to_string()}
+
+USER QUESTION: {message}
+
+INSTRUCTIONS:
+1. Answer the user's question DIRECTLY using the actual data shown above
+2. Provide specific numbers, column names, and percentages from the real data
+3. Call functions only if you need to create visualizations or perform operations
+4. DO NOT give generic suggestions - use the ACTUAL data to answer
 """
         except:
             dataset_context = f"User message: {message}\n\nNote: No dataset loaded yet. If they're asking about data operations, suggest uploading a dataset first."
@@ -210,6 +250,10 @@ Analyze what they need and call the appropriate function(s) to help them.
                                     session_id,
                                     function_args.get('columns')
                                 )
+                                results.append(result)
+                            
+                            elif function_name == "detect_missing_values":
+                                result = self.data_processor.detect_missing_values(session_id)
                                 results.append(result)
                             
                             elif function_name == "get_correlation":
@@ -336,20 +380,47 @@ Analyze what they need and call the appropriate function(s) to help them.
         # Get dataset info for context
         try:
             df = self.data_processor.get_dataframe(session_id)
-            dataset_context = f"""You are analyzing a dataset with:
-- {len(df)} rows
-- {len(df.columns)} columns
-- Column names: {', '.join(df.columns.tolist())}
-- Column types: {', '.join([f"{col} ({df[col].dtype})" for col in df.columns[:10]])}
+            
+            # Get missing value info
+            missing_info = []
+            for col in df.columns:
+                missing_count = df[col].isnull().sum()
+                if missing_count > 0:
+                    missing_pct = (missing_count / len(df)) * 100
+                    missing_info.append(f"{col}: {missing_count} ({missing_pct:.1f}%)")
+            
+            # Get numeric column stats preview
+            numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
+            stats_preview = []
+            for col in numeric_cols[:5]:
+                stats_preview.append(f"{col}: min={df[col].min():.2f}, max={df[col].max():.2f}, mean={df[col].mean():.2f}")
+            
+            dataset_context = f"""
+You are analyzing a dataset with the following ACTUAL data:
 
-Available functions:
-1. get_statistics(columns: str) - Calculate mean, median, std, min, max, quartiles
-2. create_visualization(chart_type: str, x_column: str, y_column: str, title: str) - Create charts
-3. clean_data(action: str, method: str) - Clean data (handle_missing, remove_outliers, remove_duplicates)
+DATASET OVERVIEW:
+- Total rows: {len(df)}
+- Total columns: {len(df.columns)}
 
-User request: {message}
+COLUMNS ({len(df.columns)} total):
+{chr(10).join([f"- {col} ({df[col].dtype}): {df[col].nunique()} unique values" for col in df.columns])}
 
-Analyze the request and provide a helpful response. If you need to call a function, describe what should be done."""
+MISSING VALUES:
+{chr(10).join([f"- {info}" for info in missing_info]) if missing_info else "- No missing values found"}
+
+NUMERIC COLUMNS PREVIEW:
+{chr(10).join([f"- {stat}" for stat in stats_preview]) if stats_preview else "- No numeric columns"}
+
+DATA PREVIEW (first 3 rows):
+{df.head(3).to_string()}
+
+USER QUESTION: {message}
+
+INSTRUCTIONS:
+1. Answer the user's question DIRECTLY using the actual data shown above
+2. Provide specific numbers, column names, and percentages from the real data
+3. DO NOT give generic suggestions - use the ACTUAL data to answer
+"""
         except:
             dataset_context = f"User message: {message}\n\nNote: No dataset loaded. Suggest uploading a dataset first."
         
