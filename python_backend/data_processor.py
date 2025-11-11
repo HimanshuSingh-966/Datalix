@@ -10,7 +10,7 @@ from data_quality import analyze_data_quality
 from statistics_module import calculate_statistics, calculate_correlation
 from ml_analysis import perform_ml_analysis
 from visualizations import create_visualization as create_viz
-from data_cleaning import clean_dataset, handle_missing_values, detect_outliers, remove_duplicates
+from data_cleaning import clean_dataset, handle_missing_values, detect_and_handle_outliers, remove_duplicates
 
 class DataProcessor:
     def __init__(self):

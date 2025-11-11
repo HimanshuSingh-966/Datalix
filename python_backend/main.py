@@ -24,9 +24,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global instances
+# Global instances - shared data processor for session consistency
 data_processor = DataProcessor()
-ai_service = AIService()
+ai_service = AIService(data_processor)
 
 # Include auth routes
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])

@@ -16,8 +16,9 @@ else:
     print("⚠️  Warning: GEMINI_API_KEY not set. AI features will not work.")
 
 class AIService:
-    def __init__(self):
-        self.data_processor = DataProcessor()
+    def __init__(self, data_processor: DataProcessor):
+        """Initialize AI service with shared data processor instance."""
+        self.data_processor = data_processor
         
         # Define function declarations for Gemini
         self.functions = [
