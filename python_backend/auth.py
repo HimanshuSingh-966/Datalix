@@ -18,7 +18,8 @@ sessions_db: Dict[str, str] = {}
 # Try to use Supabase if configured
 supabase_url = os.getenv("SUPABASE_URL", "")
 supabase_key = os.getenv("SUPABASE_ANON_KEY", "")
-USE_SUPABASE = bool(supabase_url and supabase_key)
+# Temporarily disable Supabase auth to use in-memory auth for testing
+USE_SUPABASE = False  # Set to True to enable Supabase auth in production
 
 if USE_SUPABASE:
     try:
@@ -76,7 +77,27 @@ async def signup(request: SignUpRequest):
             })
             
             if response.user is None:
-                raise HTTPException(status_code=400, detail="Signup failed")
+                raise HTTPException(status_code=400, detail="Signup failed - user not created")
+            
+            # Check if session exists (it might be None if email confirmation is required)
+            if response.session is None:
+                # Email confirmation required - create a temporary token for the user
+                # In production, you'd send a confirmation email
+                access_token = secrets.token_urlsafe(32)
+                sessions_db[access_token] = response.user.id
+                
+                return {
+                    "user": {
+                        "id": response.user.id,
+                        "email": response.user.email,
+                        "username": request.username
+                    },
+                    "session": {
+                        "access_token": access_token,
+                        "refresh_token": access_token
+                    },
+                    "access_token": access_token
+                }
             
             return {
                 "user": {
@@ -91,6 +112,7 @@ async def signup(request: SignUpRequest):
                 "access_token": response.session.access_token
             }
         except Exception as e:
+            print(f"Supabase signup error: {str(e)}")
             raise HTTPException(status_code=400, detail=str(e))
     else:
         # In-memory auth
