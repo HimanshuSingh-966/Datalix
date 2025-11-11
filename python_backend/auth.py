@@ -91,9 +91,16 @@ async def signup(request: SignUpRequest):
             # Check if session exists (it might be None if email confirmation is required)
             if response.session is None:
                 # Email confirmation required - create a temporary token for the user
-                # In production, you'd send a confirmation email
+                # Store user info with 'supabase:' prefix to distinguish from in-memory users
                 access_token = secrets.token_urlsafe(32)
-                sessions_db[access_token] = response.user.id
+                sessions_db[access_token] = f"supabase:{response.user.id}"
+                
+                # Store basic user info for token validation
+                users_db[f"supabase:{response.user.id}"] = {
+                    "id": response.user.id,
+                    "email": response.user.email,
+                    "username": request.username
+                }
                 
                 return {
                     "user": {
@@ -237,6 +244,31 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> Dict:
     
     token = authorization.split(" ")[1]
     
+    # First, check if this is a temporary token in our sessions database
+    # This handles both in-memory auth and Supabase users awaiting email confirmation
+    if token in sessions_db:
+        user_key = sessions_db[token]
+        
+        # Check if this is a Supabase user (prefixed with 'supabase:')
+        if user_key.startswith("supabase:") and user_key in users_db:
+            user = users_db[user_key]
+            return {
+                "id": user["id"],
+                "email": user["email"],
+                "username": user["username"]
+            }
+        
+        # Otherwise it's an in-memory auth user
+        user = next((u for u in users_db.values() if u["id"] == user_key), None)
+        
+        if user:
+            return {
+                "id": user["id"],
+                "email": user["email"],
+                "username": user["username"]
+            }
+    
+    # If not a temporary token and using Supabase, validate as JWT token
     if USE_SUPABASE and supabase_admin:
         try:
             # Use the admin client to verify the user token
@@ -260,19 +292,6 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> Dict:
         except Exception as e:
             print(f"❌ Auth error: {str(e)}")
             raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
-    else:
-        # In-memory auth
-        if token not in sessions_db:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        
-        user_id = sessions_db[token]
-        user = next((u for u in users_db.values() if u["id"] == user_id), None)
-        
-        if not user:
-            raise HTTPException(status_code=401, detail="User not found")
-        
-        return {
-            "id": user["id"],
-            "email": user["email"],
-            "username": user["username"]
-        }
+    
+    # If we get here, token is invalid
+    raise HTTPException(status_code=401, detail="Invalid token")
