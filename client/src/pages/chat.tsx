@@ -156,45 +156,17 @@ export default function ChatPage() {
       // Store session ID
       useChatStore.setState({ sessionId: data.sessionId });
 
-      // Calculate completeness from missing values
-      const calculateCompleteness = () => {
-        if (!data.preview?.columns || !data.datasetInfo?.rows) return 100;
-        
-        const totalCols = data.preview.columns.length;
-        const totalRows = data.datasetInfo.rows;
-        let missingPercentageSum = 0;
-        
-        for (const col of data.preview.columns) {
-          const missingCount = col.missing || 0;
-          if (totalRows > 0) {
-            const missingPct = (missingCount / totalRows) * 100;
-            missingPercentageSum += missingPct;
-          }
-        }
-        
-        const avgMissingPct = totalCols > 0 ? missingPercentageSum / totalCols : 0;
-        return Math.max(0, Math.round(100 - avgMissingPct));
-      };
-
-      // Set data preview and quality
+      // Set data preview and quality score for header
       setCurrentDataset(data.preview);
-      setQualityScore({
-        overallScore: data.qualityScore,
-        completeness: calculateCompleteness(),
-        consistency: 85,
-        uniqueness: 90,
-        validity: 88,
-        columnMetrics: [],
-        issues: data.issues || [],
-        recommendations: []
-      });
+      setQualityScore(data.quality);
 
       const message: ChatMessage = {
         id: generateId(),
         role: 'assistant',
-        content: `✓ Loaded dataset: **${data.datasetInfo.rows} rows × ${data.datasetInfo.columns} columns**\n\nQuality Score: **${Math.round(data.qualityScore)}/100**\n\nI've analyzed your dataset. ${data.issues.length > 0 ? `Found ${data.issues.length} potential issues.` : 'Your data looks good!'} Ask me anything about your data!`,
+        content: `✓ Loaded dataset: **${data.datasetInfo.rows} rows × ${data.datasetInfo.columns} columns**\n\nQuality Score: **${Math.round(data.quality.overallScore)}/100**\n\nI've analyzed your dataset. ${data.issues.length > 0 ? `Found ${data.issues.length} potential issues.` : 'Your data looks good!'} Ask me anything about your data!`,
         timestamp: new Date(),
         dataPreview: data.preview,
+        qualityScore: data.quality,
         suggestedActions: [
           { label: 'Show Statistics', prompt: 'Show statistical summary' },
           { label: 'Correlation Matrix', prompt: 'Show correlation matrix' },
@@ -235,45 +207,17 @@ export default function ChatPage() {
   const handleExampleDatasetLoaded = (data: any) => {
     useChatStore.setState({ sessionId: data.sessionId });
     setCurrentDataset(data.preview);
-    
-    // Calculate completeness from missing values
-    const calculateCompleteness = () => {
-      if (!data.preview?.columns || !data.datasetInfo?.rows) return 100;
-      
-      const totalCols = data.preview.columns.length;
-      const totalRows = data.datasetInfo.rows;
-      let missingPercentageSum = 0;
-      
-      for (const col of data.preview.columns) {
-        const missingCount = col.missing || 0;
-        if (totalRows > 0) {
-          const missingPct = (missingCount / totalRows) * 100;
-          missingPercentageSum += missingPct;
-        }
-      }
-      
-      const avgMissingPct = totalCols > 0 ? missingPercentageSum / totalCols : 0;
-      return Math.max(0, Math.round(100 - avgMissingPct));
-    };
+    setQualityScore(data.quality);
     
     const issues = data.issues ?? [];
-    setQualityScore({
-      overallScore: data.qualityScore,
-      completeness: calculateCompleteness(),
-      consistency: 85,
-      uniqueness: 90,
-      validity: 88,
-      columnMetrics: [],
-      issues: issues,
-      recommendations: []
-    });
 
     const message: ChatMessage = {
       id: generateId(),
       role: 'assistant',
-      content: `✓ Loaded example dataset: **${data.exampleDatasetName}**\n\n**${data.datasetInfo.rows} rows × ${data.datasetInfo.columns} columns**\n\nQuality Score: **${Math.round(data.qualityScore)}/100**\n\nI've loaded a sample dataset for you to explore. ${issues.length > 0 ? `Found ${issues.length} potential issues.` : 'The data looks good!'} Try asking me about the data!`,
+      content: `✓ Loaded example dataset: **${data.exampleDatasetName}**\n\n**${data.datasetInfo.rows} rows × ${data.datasetInfo.columns} columns**\n\nQuality Score: **${Math.round(data.quality.overallScore)}/100**\n\nI've loaded a sample dataset for you to explore. ${issues.length > 0 ? `Found ${issues.length} potential issues.` : 'The data looks good!'} Try asking me about the data!`,
       timestamp: new Date(),
       dataPreview: data.preview,
+      qualityScore: data.quality,
       suggestedActions: [
         { label: 'Show Statistics', prompt: 'Show statistical summary' },
         { label: 'Correlation Matrix', prompt: 'Show correlation matrix' },
@@ -326,6 +270,12 @@ export default function ChatPage() {
                     }}
                   />
 
+                  {message.qualityScore && (
+                    <div className="ml-11">
+                      <QualityScore quality={message.qualityScore} />
+                    </div>
+                  )}
+
                   {message.dataPreview && (
                     <div className="ml-11">
                       <DataPreview data={message.dataPreview} />
@@ -354,12 +304,6 @@ export default function ChatPage() {
               )}
 
               <div ref={messagesEndRef} />
-            </div>
-          )}
-
-          {qualityScore && currentDataset && (
-            <div className="mt-8">
-              <QualityScore quality={qualityScore} />
             </div>
           )}
         </div>

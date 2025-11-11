@@ -69,6 +69,7 @@ export interface ChatMessage {
   timestamp: Date;
   chartData?: PlotlyChartData;
   dataPreview?: DataPreview;
+  qualityScore?: DataQuality;
   suggestedActions?: SuggestedAction[];
   functionCalls?: string[];
   error?: boolean;
@@ -219,7 +220,7 @@ export interface UploadResponse {
     columnNames: string[];
     columnTypes: Record<string, string>;
   };
-  qualityScore: number;
+  quality: DataQuality;
   preview: DataPreview;
   issues: QualityIssue[];
 }

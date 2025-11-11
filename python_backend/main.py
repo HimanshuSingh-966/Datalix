@@ -81,7 +81,7 @@ async def upload_file(
         return {
             "sessionId": session_id,
             "datasetInfo": result["dataset_info"],
-            "qualityScore": result["quality_score"],
+            "quality": result["quality"],
             "preview": result["preview"],
             "issues": result["issues"]
         }
@@ -263,7 +263,7 @@ async def load_example_dataset(
         return {
             "sessionId": session_id,
             "datasetInfo": result["dataset_info"],
-            "qualityScore": result["quality_score"],
+            "quality": result["quality"],
             "preview": result["preview"],
             "issues": result["issues"],
             "exampleDatasetName": dataset_info['name']

@@ -71,7 +71,7 @@ class DataProcessor:
                 "columnNames": df.columns.tolist(),
                 "columnTypes": df.dtypes.astype(str).to_dict()
             },
-            "quality_score": quality_analysis["overallScore"],
+            "quality": quality_analysis,
             "preview": preview,
             "issues": quality_analysis["issues"]
         }
