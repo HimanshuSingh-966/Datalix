@@ -50,6 +50,10 @@ export default function ChatPage() {
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
+    if (!sessionId) {
+      toast({ description: 'Please upload a dataset first', variant: 'destructive' });
+      return;
+    }
 
     const userMessage: ChatMessage = {
       id: generateId(),
@@ -63,22 +67,41 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Replace with actual API call in backend integration
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          message: input
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to process message');
+      }
+
+      const data = await response.json();
 
       const assistantMessage: ChatMessage = {
         id: generateId(),
         role: 'assistant',
-        content: 'I received your message! Once the backend is integrated, I\'ll be able to process your data operations using Groq and Gemini AI.',
+        content: data.message,
         timestamp: new Date(),
-        suggestedActions: [
-          { label: 'Show Statistics', prompt: 'Show statistical summary' },
-          { label: 'Create Visualization', prompt: 'Create a correlation heatmap' },
-          { label: 'Export Data', prompt: 'Export as CSV' },
-        ],
+        functionCalls: data.function_calls,
+        chartData: data.chart_data,
+        dataPreview: data.data_preview,
+        suggestedActions: data.suggested_actions,
       };
 
       addMessage(assistantMessage);
+
+      // Update dataset if there's a new preview
+      if (data.data_preview) {
+        setCurrentDataset(data.data_preview);
+      }
     } catch (error) {
       const errorMessage: ChatMessage = {
         id: generateId(),
@@ -106,67 +129,57 @@ export default function ChatPage() {
 
   const handleUpload = async (file: File) => {
     try {
-      // TODO: Replace with actual API call in backend integration
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const formData = new FormData();
+      formData.append('file', file);
 
-      // Mock response
-      const mockDataPreview = {
-        columns: [
-          { name: 'id', type: 'int64', nullCount: 0, uniqueCount: 100, sampleValues: [1, 2, 3, 4, 5] },
-          { name: 'name', type: 'object', nullCount: 5, uniqueCount: 95, sampleValues: ['Alice', 'Bob', 'Charlie', null, 'Diana'] },
-          { name: 'age', type: 'int64', nullCount: 10, uniqueCount: 45, sampleValues: [25, 30, null, 35, 40] },
-          { name: 'salary', type: 'float64', nullCount: 2, uniqueCount: 98, sampleValues: [50000, 60000, 75000, null, 90000] },
-        ],
-        rows: [
-          { id: 1, name: 'Alice', age: 25, salary: 50000 },
-          { id: 2, name: 'Bob', age: 30, salary: 60000 },
-          { id: 3, name: 'Charlie', age: null, salary: 75000 },
-          { id: 4, name: null, age: 35, salary: null },
-          { id: 5, name: 'Diana', age: 40, salary: 90000 },
-        ],
-        totalRows: 100,
-        totalColumns: 4,
-        fileName: file.name,
-      };
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: formData
+      });
 
-      const mockQuality = {
-        overallScore: 67.5,
-        completeness: 0.85,
-        consistency: 0.92,
-        uniqueness: 0.88,
-        validity: 0.95,
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Upload failed');
+      }
+
+      const data = await response.json();
+
+      // Store session ID
+      useChatStore.setState({ sessionId: data.sessionId });
+
+      // Set data preview and quality
+      setCurrentDataset(data.preview);
+      setQualityScore({
+        overallScore: data.qualityScore,
+        completeness: 0, // Will be populated from issues
+        consistency: 0,
+        uniqueness: 0,
+        validity: 0,
         columnMetrics: [],
-        issues: [
-          { type: 'missing_values' as const, severity: 'medium' as const, column: 'name', count: 5, description: '5 missing values in name column' },
-          { type: 'missing_values' as const, severity: 'medium' as const, column: 'age', count: 10, description: '10 missing values in age column' },
-          { type: 'outliers' as const, severity: 'low' as const, column: 'salary', count: 3, description: '3 outliers detected in salary column' },
-        ],
-        recommendations: [
-          'Impute missing values in age column using median',
-          'Impute missing values in name column using mode or custom value',
-          'Review outliers in salary column before removal',
-        ],
-      };
-
-      setCurrentDataset(mockDataPreview);
-      setQualityScore(mockQuality);
+        issues: data.issues || [],
+        recommendations: []
+      });
 
       const message: ChatMessage = {
         id: generateId(),
         role: 'assistant',
-        content: `✓ Loaded dataset: **${mockDataPreview.totalRows} rows × ${mockDataPreview.totalColumns} columns**\n\nQuality Score: **${Math.round(mockQuality.overallScore)}/100**\n\nI've analyzed your dataset. You can see the data preview and quality metrics below.`,
+        content: `✓ Loaded dataset: **${data.datasetInfo.rows} rows × ${data.datasetInfo.columns} columns**\n\nQuality Score: **${Math.round(data.qualityScore)}/100**\n\nI've analyzed your dataset. ${data.issues.length > 0 ? `Found ${data.issues.length} potential issues.` : 'Your data looks good!'} Ask me anything about your data!`,
         timestamp: new Date(),
-        dataPreview: mockDataPreview,
+        dataPreview: data.preview,
         suggestedActions: [
-          { label: 'Clean Dataset', prompt: 'Clean the dataset and remove outliers' },
           { label: 'Show Statistics', prompt: 'Show statistical summary' },
-          { label: 'Create Chart', prompt: 'Create a correlation heatmap' },
+          { label: 'Correlation Matrix', prompt: 'Show correlation matrix' },
+          { label: 'Create Visualization', prompt: 'Create a scatter plot of the first two numeric columns' },
+          ...(data.issues.length > 0 ? [{ label: 'Clean Data', prompt: 'Help me clean this dataset' }] : [])
         ],
       };
 
       addMessage(message);
       setShowUploadDialog(false);
-      toast({ description: 'Dataset uploaded successfully!' });
+      toast({ description: 'Dataset uploaded and analyzed!' });
     } catch (error) {
       toast({ 
         description: error instanceof Error ? error.message : 'Upload failed', 

@@ -23,12 +23,25 @@ export default function AuthPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Replace with actual API call in backend integration
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: loginForm.username, // Using username field as email
+          password: loginForm.password
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Login failed');
+      }
+
+      const data = await response.json();
       
-      // Mock success
-      setUser({ id: '1', username: loginForm.username, email: 'user@example.com' });
-      setToken('mock-token');
+      setUser(data.user);
+      setToken(data.access_token);
+      localStorage.setItem('access_token', data.access_token);
       
       toast({ description: 'Login successful!' });
       setLocation('/');
@@ -53,12 +66,26 @@ export default function AuthPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Replace with actual API call in backend integration
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: signupForm.email,
+          password: signupForm.password,
+          username: signupForm.username
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Signup failed');
+      }
+
+      const data = await response.json();
       
-      // Mock success
-      setUser({ id: '1', username: signupForm.username, email: signupForm.email });
-      setToken('mock-token');
+      setUser(data.user);
+      setToken(data.access_token);
+      localStorage.setItem('access_token', data.access_token);
       
       toast({ description: 'Account created successfully!' });
       setLocation('/');
