@@ -26,20 +26,27 @@ USE_SUPABASE = bool(supabase_url and supabase_key and supabase_service_key)
 if USE_SUPABASE:
     try:
         from supabase import create_client, Client
-        # Create Supabase client with minimal configuration
+        # Create client with anon key for auth operations (signup/signin)
         supabase: Optional[Client] = create_client(
             supabase_url=supabase_url,
             supabase_key=supabase_key
+        )
+        # Create admin client with service role for admin operations (token verification)
+        supabase_admin: Optional[Client] = create_client(
+            supabase_url=supabase_url,
+            supabase_key=supabase_service_key
         )
         print("✓ Supabase authentication enabled")
     except Exception as e:
         print(f"⚠️  Supabase initialization failed: {e}")
         USE_SUPABASE = False
         supabase = None
+        supabase_admin = None
         print("→ Using in-memory authentication")
 else:
     print("⚠️  Supabase not configured. Using in-memory authentication")
     supabase = None
+    supabase_admin = None
 
 # Request models
 class SignUpRequest(BaseModel):
@@ -230,22 +237,29 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> Dict:
     
     token = authorization.split(" ")[1]
     
-    if USE_SUPABASE and supabase:
+    if USE_SUPABASE and supabase_admin:
         try:
-            user_response = supabase.auth.get_user(token)
+            # Use the admin client to verify the user token
+            user_response = supabase_admin.auth.get_user(token)
             
             if not user_response or not user_response.user:
+                print(f"❌ Token validation failed - no user found")
                 raise HTTPException(status_code=401, detail="Invalid token")
             
             username = user_response.user.user_metadata.get('username', user_response.user.email.split('@')[0] if user_response.user.email else 'user')
+            
+            print(f"✓ User authenticated: {user_response.user.email}")
             
             return {
                 "id": user_response.user.id,
                 "email": user_response.user.email,
                 "username": username
             }
+        except HTTPException:
+            raise
         except Exception as e:
-            raise HTTPException(status_code=401, detail=str(e))
+            print(f"❌ Auth error: {str(e)}")
+            raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
     else:
         # In-memory auth
         if token not in sessions_db:

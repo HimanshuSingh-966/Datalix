@@ -204,11 +204,34 @@ export default function ChatPage() {
     }
   };
 
+  const handleExampleDataset = () => {
+    toast({ 
+      description: 'Example datasets feature coming soon! For now, please upload your own data.',
+      variant: 'default'
+    });
+  };
+
+  const handleSessionHistory = () => {
+    toast({ 
+      description: 'Session history feature coming soon!',
+      variant: 'default'
+    });
+  };
+
+  const handleSettings = () => {
+    toast({ 
+      description: 'Settings feature coming soon!',
+      variant: 'default'
+    });
+  };
+
   return (
     <div className="flex flex-col h-screen bg-background">
       <Header
         onUploadClick={() => setShowUploadDialog(true)}
         onNewSession={handleNewSession}
+        onSessionHistory={handleSessionHistory}
+        onSettings={handleSettings}
         datasetLoaded={!!currentDataset}
         qualityScore={qualityScore?.overallScore}
       />
@@ -216,7 +239,11 @@ export default function ChatPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-6 py-6">
           {messages.length === 0 ? (
-            <EmptyState type="no-messages" onAction={() => setShowUploadDialog(true)} />
+            <EmptyState 
+              type="no-messages" 
+              onAction={() => setShowUploadDialog(true)} 
+              onExampleDataset={handleExampleDataset}
+            />
           ) : (
             <div className="space-y-6">
               {messages.map((message) => (

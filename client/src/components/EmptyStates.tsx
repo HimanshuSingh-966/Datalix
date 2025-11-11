@@ -5,9 +5,10 @@ import { Upload, Sparkles, FileText, TrendingUp } from 'lucide-react';
 interface EmptyStateProps {
   type: 'no-data' | 'no-messages' | 'error';
   onAction?: () => void;
+  onExampleDataset?: () => void;
 }
 
-export function EmptyState({ type, onAction }: EmptyStateProps) {
+export function EmptyState({ type, onAction, onExampleDataset }: EmptyStateProps) {
   if (type === 'no-messages') {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-6 text-center" data-testid="empty-state-no-messages">
@@ -34,7 +35,7 @@ export function EmptyState({ type, onAction }: EmptyStateProps) {
             </div>
           </Card>
 
-          <Card className="p-6 text-left hover-elevate cursor-pointer transition-all">
+          <Card className="p-6 text-left hover-elevate cursor-pointer transition-all" onClick={() => onExampleDataset?.()}>
             <div className="flex items-start gap-4">
               <div className="p-3 rounded-lg bg-chart-2/10">
                 <FileText className="h-6 w-6 text-chart-2" />

@@ -14,11 +14,13 @@ import { useAuthStore } from '@/lib/store';
 interface HeaderProps {
   onUploadClick?: () => void;
   onNewSession?: () => void;
+  onSessionHistory?: () => void;
+  onSettings?: () => void;
   datasetLoaded?: boolean;
   qualityScore?: number;
 }
 
-export function Header({ onUploadClick, onNewSession, datasetLoaded, qualityScore }: HeaderProps) {
+export function Header({ onUploadClick, onNewSession, onSessionHistory, onSettings, datasetLoaded, qualityScore }: HeaderProps) {
   const { user, logout } = useAuthStore();
 
   const getQualityBadgeVariant = (score?: number): 'default' | 'secondary' | 'destructive' => {
@@ -92,11 +94,11 @@ export function Header({ onUploadClick, onNewSession, datasetLoaded, qualityScor
                 <p className="text-xs text-muted-foreground" data-testid="text-user-email">{user?.email || 'user@example.com'}</p>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem data-testid="menu-history">
+              <DropdownMenuItem onClick={() => onSessionHistory?.()} data-testid="menu-history">
                 <History className="h-4 w-4 mr-2" />
                 Session History
               </DropdownMenuItem>
-              <DropdownMenuItem data-testid="menu-settings">
+              <DropdownMenuItem onClick={() => onSettings?.()} data-testid="menu-settings">
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </DropdownMenuItem>
