@@ -122,16 +122,16 @@ export default function AuthPage() {
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-username">Username</Label>
+                  <Label htmlFor="login-email">Email</Label>
                   <Input
-                    id="login-username"
-                    type="text"
-                    placeholder="Enter your username"
+                    id="login-email"
+                    type="email"
+                    placeholder="Enter your email"
                     value={loginForm.username}
                     onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
                     required
                     disabled={isLoading}
-                    data-testid="input-login-username"
+                    data-testid="input-login-email"
                   />
                 </div>
 

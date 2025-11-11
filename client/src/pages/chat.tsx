@@ -163,7 +163,7 @@ export default function ChatPage() {
       const message: ChatMessage = {
         id: generateId(),
         role: 'assistant',
-        content: `✓ Loaded dataset: **${data.datasetInfo.rows} rows × ${data.datasetInfo.columns} columns**\n\nQuality Score: **${Math.round(data.quality.overallScore)}/100**\n\nI've analyzed your dataset. ${data.issues.length > 0 ? `Found ${data.issues.length} potential issues.` : 'Your data looks good!'} Ask me anything about your data!`,
+        content: `✓ Dataset uploaded successfully!\n\nQuality Score: **${Math.round(data.quality.overallScore)}/100**\n\nI've analyzed your dataset. ${data.issues.length > 0 ? `Found ${data.issues.length} potential issues.` : 'Your data looks good!'} Ask me anything about your data!`,
         timestamp: new Date(),
         dataPreview: data.preview,
         qualityScore: data.quality,
@@ -214,7 +214,7 @@ export default function ChatPage() {
     const message: ChatMessage = {
       id: generateId(),
       role: 'assistant',
-      content: `✓ Loaded example dataset: **${data.exampleDatasetName}**\n\n**${data.datasetInfo.rows} rows × ${data.datasetInfo.columns} columns**\n\nQuality Score: **${Math.round(data.quality.overallScore)}/100**\n\nI've loaded a sample dataset for you to explore. ${issues.length > 0 ? `Found ${issues.length} potential issues.` : 'The data looks good!'} Try asking me about the data!`,
+      content: `✓ Loaded example dataset: **${data.exampleDatasetName}**\n\nQuality Score: **${Math.round(data.quality.overallScore)}/100**\n\nI've loaded a sample dataset for you to explore. ${issues.length > 0 ? `Found ${issues.length} potential issues.` : 'The data looks good!'} Try asking me about the data!`,
       timestamp: new Date(),
       dataPreview: data.preview,
       qualityScore: data.quality,
