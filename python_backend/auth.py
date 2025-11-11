@@ -18,8 +18,10 @@ sessions_db: Dict[str, str] = {}
 # Try to use Supabase if configured
 supabase_url = os.getenv("SUPABASE_URL", "")
 supabase_key = os.getenv("SUPABASE_ANON_KEY", "")
-# Temporarily disable Supabase auth to use in-memory auth for testing
-USE_SUPABASE = False  # Set to True to enable Supabase auth in production
+supabase_service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+
+# Enable Supabase auth if all credentials are available
+USE_SUPABASE = bool(supabase_url and supabase_key and supabase_service_key)
 
 if USE_SUPABASE:
     try:
@@ -158,7 +160,10 @@ async def signin(request: SignInRequest):
             if response.user is None:
                 raise HTTPException(status_code=401, detail="Invalid credentials")
             
-            username = response.user.user_metadata.get('username', response.user.email.split('@')[0])
+            if response.session is None:
+                raise HTTPException(status_code=401, detail="Session not created")
+            
+            username = response.user.user_metadata.get('username', response.user.email.split('@')[0] if response.user.email else 'user')
             
             return {
                 "user": {
@@ -229,10 +234,10 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> Dict:
         try:
             user_response = supabase.auth.get_user(token)
             
-            if not user_response.user:
+            if not user_response or not user_response.user:
                 raise HTTPException(status_code=401, detail="Invalid token")
             
-            username = user_response.user.user_metadata.get('username', user_response.user.email.split('@')[0])
+            username = user_response.user.user_metadata.get('username', user_response.user.email.split('@')[0] if user_response.user.email else 'user')
             
             return {
                 "id": user_response.user.id,
