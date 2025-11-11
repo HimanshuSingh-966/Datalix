@@ -268,7 +268,7 @@ export default function ChatPage() {
       />
 
       <div className="flex-1 overflow-y-auto flex justify-center">
-        <div className="w-full max-w-3xl px-4 py-6">
+        <div className="w-full max-w-2xl px-4 py-6">
           {messages.length === 0 ? (
             <EmptyState 
               type="no-messages" 
@@ -325,8 +325,8 @@ export default function ChatPage() {
         </div>
       </div>
 
-      <div className="border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex justify-center">
-        <div className="w-full max-w-3xl px-4 py-4">
+      <div className="border-t border-border bg-background flex justify-center">
+        <div className="w-full max-w-2xl px-4 py-4">
           <div className="flex items-end gap-3">
             <Button
               variant="ghost"
