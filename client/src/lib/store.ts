@@ -7,6 +7,7 @@ interface ChatStore {
   currentDataset: DataPreview | null;
   qualityScore: DataQuality | null;
   isLoading: boolean;
+  aiProvider: 'auto' | 'groq' | 'gemini';
   
   setSessionId: (id: string) => void;
   addMessage: (message: ChatMessage) => void;
@@ -15,6 +16,7 @@ interface ChatStore {
   setCurrentDataset: (dataset: DataPreview | null) => void;
   setQualityScore: (score: DataQuality | null) => void;
   setIsLoading: (loading: boolean) => void;
+  setAiProvider: (provider: 'auto' | 'groq' | 'gemini') => void;
   clearSession: () => void;
 }
 
@@ -24,6 +26,7 @@ export const useChatStore = create<ChatStore>((set) => ({
   currentDataset: null,
   qualityScore: null,
   isLoading: false,
+  aiProvider: 'auto',
   
   setSessionId: (id) => set({ sessionId: id }),
   
@@ -46,6 +49,8 @@ export const useChatStore = create<ChatStore>((set) => ({
   setQualityScore: (score) => set({ qualityScore: score }),
   
   setIsLoading: (loading) => set({ isLoading: loading }),
+  
+  setAiProvider: (provider) => set({ aiProvider: provider }),
   
   clearSession: () => set({
     messages: [],

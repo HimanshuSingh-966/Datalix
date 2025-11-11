@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { AIProviderSelector } from '@/components/AIProviderSelector';
 import { Upload, Plus, User, LogOut, Settings, History } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 
@@ -57,6 +58,8 @@ export function Header({ onUploadClick, onNewSession, datasetLoaded, qualityScor
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          <AIProviderSelector />
+          
           <Button
             variant="outline"
             size="sm"

@@ -24,6 +24,7 @@ export default function ChatPage() {
     currentDataset,
     qualityScore,
     isLoading,
+    aiProvider,
     addMessage,
     setCurrentDataset,
     setQualityScore,
@@ -75,7 +76,8 @@ export default function ChatPage() {
         },
         body: JSON.stringify({
           session_id: sessionId,
-          message: input
+          message: input,
+          provider: aiProvider
         })
       });
 
