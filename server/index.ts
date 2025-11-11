@@ -2,6 +2,7 @@ import express from "express";
 import { createServer } from "http";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { spawn } from "child_process";
+import { setupVite } from "./vite";
 
 const app = express();
 
@@ -24,7 +25,7 @@ pipInstall.on('exit', (code) => {
   console.log('Starting Python backend...');
   pythonProcess = spawn('python', ['main.py'], {
     cwd: './python_backend',
-    env: { ...process.env },
+    env: { ...process.env, PORT: '8001' },
     stdio: 'inherit'
   });
 
@@ -45,7 +46,7 @@ process.on('exit', () => {
 
 // Proxy /api requests to Python backend using http-proxy-middleware
 app.use('/api', createProxyMiddleware({
-  target: 'http://localhost:8000',
+  target: 'http://localhost:8001',
   changeOrigin: true,
   logLevel: 'debug',
   onProxyReq: (proxyReq, req) => {
@@ -66,21 +67,12 @@ app.use('/api', createProxyMiddleware({
   }
 }));
 
-// Vite dev server setup
-const { createServer: createViteServer } = await import("vite");
-const vite = await createViteServer({
-  server: {
-    middlewareMode: true,
-  },
-  appType: "spa",
-});
-
-app.use(vite.middlewares);
-
+// Vite dev server setup with proper configuration
 const httpServer = createServer(app);
+await setupVite(app, httpServer);
 
 const PORT = Number(process.env.PORT) || 5000;
 httpServer.listen(PORT, "0.0.0.0", () => {
   console.log(`Frontend server running on http://0.0.0.0:${PORT}`);
-  console.log(`Proxying /api requests to Python backend on http://localhost:8000`);
+  console.log(`Proxying /api requests to Python backend on http://localhost:8001`);
 });

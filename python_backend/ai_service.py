@@ -2,6 +2,7 @@ import os
 import json
 from typing import Dict, Any, List, Optional
 import google.generativeai as genai
+import google.ai.generativelanguage as glm
 from data_processor import DataProcessor
 from statistics_module import calculate_statistics, calculate_correlation
 from visualizations import create_visualization
@@ -12,6 +13,7 @@ from ml_analysis import perform_ml_analysis
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
+    print("✓ Gemini AI configured")
 else:
     print("⚠️  Warning: GEMINI_API_KEY not set. AI features will not work.")
 
@@ -20,159 +22,74 @@ class AIService:
         """Initialize AI service with shared data processor instance."""
         self.data_processor = data_processor
         
-        # Define function declarations for Gemini
-        self.functions = [
-            {
-                "name": "get_statistics",
-                "description": "Calculate statistical summary (mean, median, std, min, max, quartiles) for numeric columns in the dataset",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "columns": {
-                            "type": "array",
-                            "items": {"type": "string"},
-                            "description": "Specific columns to analyze. If not provided, analyzes all numeric columns"
-                        }
-                    }
-                }
-            },
-            {
-                "name": "get_correlation",
-                "description": "Calculate correlation matrix showing relationships between numeric variables",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "columns": {
-                            "type": "array",
-                            "items": {"type": "string"},
-                            "description": "Specific columns to include in correlation. If not provided, uses all numeric columns"
-                        }
-                    }
-                }
-            },
-            {
-                "name": "create_visualization",
-                "description": "Create various types of charts and plots (histogram, scatter, line, bar, box, violin, heatmap, correlation, pie, etc.)",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "chart_type": {
-                            "type": "string",
-                            "enum": ["histogram", "scatter", "line", "bar", "box", "violin", "heatmap", "correlation", "pie", "donut", "treemap", "sunburst", "3d_scatter"],
-                            "description": "Type of chart to create"
-                        },
-                        "x_column": {
-                            "type": "string",
-                            "description": "Column for X-axis"
-                        },
-                        "y_column": {
-                            "type": "string",
-                            "description": "Column for Y-axis"
-                        },
-                        "title": {
-                            "type": "string",
-                            "description": "Chart title"
-                        },
-                        "colorBy": {
-                            "type": "string",
-                            "description": "Column to use for color coding"
-                        }
-                    },
-                    "required": ["chart_type"]
-                }
-            },
-            {
-                "name": "clean_data",
-                "description": "Clean the dataset by handling missing values, removing outliers, removing duplicates, or normalizing data",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "handleMissing": {
-                            "type": "boolean",
-                            "description": "Whether to handle missing values"
-                        },
-                        "missingMethod": {
-                            "type": "string",
-                            "enum": ["drop", "mean", "median", "mode", "forward_fill", "backward_fill", "knn", "interpolation"],
-                            "description": "Method to handle missing values"
-                        },
-                        "removeDuplicates": {
-                            "type": "boolean",
-                            "description": "Whether to remove duplicate rows"
-                        },
-                        "handleOutliers": {
-                            "type": "boolean",
-                            "description": "Whether to handle outliers"
-                        },
-                        "outlierMethod": {
-                            "type": "string",
-                            "enum": ["iqr", "zscore"],
-                            "description": "Method to detect outliers"
-                        },
-                        "outlierAction": {
-                            "type": "string",
-                            "enum": ["remove", "cap", "flag"],
-                            "description": "What to do with detected outliers"
-                        }
-                    }
-                }
-            },
-            {
-                "name": "ml_analysis",
-                "description": "Perform machine learning analysis: anomaly detection, clustering, dimensionality reduction (PCA/t-SNE), or feature importance",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "analysis_type": {
-                            "type": "string",
-                            "enum": ["anomaly_detection", "clustering", "dimensionality_reduction", "feature_importance"],
-                            "description": "Type of ML analysis to perform"
-                        },
-                        "algorithm": {
-                            "type": "string",
-                            "description": "Specific algorithm (e.g., 'kmeans', 'dbscan' for clustering, 'pca', 'tsne' for dimensionality reduction)"
-                        },
-                        "n_clusters": {
-                            "type": "integer",
-                            "description": "Number of clusters for clustering algorithms"
-                        },
-                        "contamination": {
-                            "type": "number",
-                            "description": "Expected proportion of anomalies (for anomaly detection)"
-                        }
-                    },
-                    "required": ["analysis_type"]
-                }
-            },
-            {
-                "name": "filter_data",
-                "description": "Filter dataset based on conditions (greater than, less than, equals, contains, etc.)",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "column": {
-                            "type": "string",
-                            "description": "Column to filter on"
-                        },
-                        "operator": {
-                            "type": "string",
-                            "enum": [">", "<", "==", "!=", ">=", "<=", "contains"],
-                            "description": "Comparison operator"
-                        },
-                        "value": {
-                            "description": "Value to compare against"
-                        }
-                    },
-                    "required": ["column", "operator", "value"]
-                }
-            }
-        ]
-        
-        # Initialize Gemini model with function calling
+        # Initialize Gemini model with function calling using proper glm format
         if GEMINI_API_KEY:
+            # Define function declarations using glm for type-safe declarations
+            tool = glm.Tool(
+                function_declarations=[
+                    glm.FunctionDeclaration(
+                        name="get_statistics",
+                        description="Calculate statistical summary (mean, median, std, min, max, quartiles) for numeric columns",
+                        parameters=glm.Schema(
+                            type=glm.Type.OBJECT,
+                            properties={
+                                "columns": glm.Schema(
+                                    type=glm.Type.STRING,
+                                    description="Comma-separated column names to analyze"
+                                )
+                            }
+                        )
+                    ),
+                    glm.FunctionDeclaration(
+                        name="create_visualization",
+                        description="Create charts: histogram, scatter, line, bar, box, violin, heatmap, correlation, pie",
+                        parameters=glm.Schema(
+                            type=glm.Type.OBJECT,
+                            properties={
+                                "chart_type": glm.Schema(
+                                    type=glm.Type.STRING,
+                                    description="Type: histogram, scatter, line, bar, heatmap, correlation, pie"
+                                ),
+                                "x_column": glm.Schema(
+                                    type=glm.Type.STRING,
+                                    description="Column for X-axis"
+                                ),
+                                "y_column": glm.Schema(
+                                    type=glm.Type.STRING,
+                                    description="Column for Y-axis"
+                                ),
+                                "title": glm.Schema(
+                                    type=glm.Type.STRING,
+                                    description="Chart title"
+                                )
+                            },
+                            required=["chart_type"]
+                        )
+                    ),
+                    glm.FunctionDeclaration(
+                        name="clean_data",
+                        description="Clean dataset: handle missing values, outliers, duplicates",
+                        parameters=glm.Schema(
+                            type=glm.Type.OBJECT,
+                            properties={
+                                "action": glm.Schema(
+                                    type=glm.Type.STRING,
+                                    description="Action: handle_missing, remove_outliers, remove_duplicates"
+                                ),
+                                "method": glm.Schema(
+                                    type=glm.Type.STRING,
+                                    description="Method: mean, median, drop, iqr, zscore"
+                                )
+                            },
+                            required=["action"]
+                        )
+                    )
+                ]
+            )
+            
             self.model = genai.GenerativeModel(
                 'gemini-1.5-flash',
-                tools=self.functions
+                tools=[tool]
             )
         else:
             self.model = None
