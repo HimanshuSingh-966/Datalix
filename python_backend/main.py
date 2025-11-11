@@ -29,7 +29,7 @@ data_processor = DataProcessor()
 ai_service = AIService(data_processor)
 
 # Include auth routes
-app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 # Request/Response Models
 class ChatRequest(BaseModel):
@@ -55,11 +55,11 @@ class OperationRequest(BaseModel):
 async def root():
     return {"message": "DataLix 2.0 API", "version": "2.0.0", "status": "running"}
 
-@app.get("/api/health")
+@app.get("/health")
 async def health_check():
     return {"status": "healthy", "python_version": "3.11"}
 
-@app.post("/api/upload")
+@app.post("/upload")
 async def upload_file(
     file: UploadFile = File(...),
     user: Dict = Depends(get_current_user)
@@ -84,7 +84,7 @@ async def upload_file(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/api/chat", response_model=ChatResponse)
+@app.post("/chat", response_model=ChatResponse)
 async def chat(
     request: ChatRequest,
     user: Dict = Depends(get_current_user)
@@ -101,7 +101,7 @@ async def chat(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/api/ai-providers")
+@app.get("/ai-providers")
 async def get_ai_providers():
     """Get available AI providers"""
     return {
@@ -112,7 +112,7 @@ async def get_ai_providers():
         "default": "groq" if ai_service.groq_available else "gemini" if ai_service.gemini_available else None
     }
 
-@app.post("/api/statistics")
+@app.post("/statistics")
 async def get_statistics(
     request: OperationRequest,
     user: Dict = Depends(get_current_user)
@@ -124,7 +124,7 @@ async def get_statistics(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/api/correlation")
+@app.post("/correlation")
 async def get_correlation(
     request: OperationRequest,
     user: Dict = Depends(get_current_user)
@@ -136,7 +136,7 @@ async def get_correlation(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/api/visualize")
+@app.post("/visualize")
 async def create_visualization(
     request: OperationRequest,
     user: Dict = Depends(get_current_user)
@@ -154,7 +154,7 @@ async def create_visualization(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/api/clean")
+@app.post("/clean")
 async def clean_data(
     request: OperationRequest,
     user: Dict = Depends(get_current_user)
@@ -169,7 +169,7 @@ async def clean_data(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/api/ml-analysis")
+@app.post("/ml-analysis")
 async def ml_analysis(
     request: OperationRequest,
     user: Dict = Depends(get_current_user)
@@ -185,7 +185,7 @@ async def ml_analysis(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/api/export")
+@app.post("/export")
 async def export_data(
     request: OperationRequest,
     user: Dict = Depends(get_current_user)
@@ -205,7 +205,7 @@ async def export_data(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/api/sessions")
+@app.get("/sessions")
 async def get_sessions(user: Dict = Depends(get_current_user)):
     """Get user's data sessions"""
     try:
@@ -214,7 +214,7 @@ async def get_sessions(user: Dict = Depends(get_current_user)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.delete("/api/sessions/{session_id}")
+@app.delete("/sessions/{session_id}")
 async def delete_session(
     session_id: str,
     user: Dict = Depends(get_current_user)
