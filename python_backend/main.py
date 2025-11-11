@@ -35,6 +35,7 @@ app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 class ChatRequest(BaseModel):
     session_id: str
     message: str
+    provider: Optional[str] = "auto"
 
 class ChatResponse(BaseModel):
     message: str
@@ -88,16 +89,28 @@ async def chat(
     request: ChatRequest,
     user: Dict = Depends(get_current_user)
 ):
-    """Process natural language queries using Gemini AI"""
+    """Process natural language queries using AI (Groq or Gemini)"""
     try:
         response = await ai_service.process_message(
             session_id=request.session_id,
             message=request.message,
-            user_id=user['id']
+            user_id=user['id'],
+            provider=request.provider
         )
         return response
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/ai-providers")
+async def get_ai_providers():
+    """Get available AI providers"""
+    return {
+        "providers": {
+            "gemini": ai_service.gemini_available,
+            "groq": ai_service.groq_available
+        },
+        "default": "groq" if ai_service.groq_available else "gemini" if ai_service.gemini_available else None
+    }
 
 @app.post("/api/statistics")
 async def get_statistics(

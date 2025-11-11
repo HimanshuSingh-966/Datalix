@@ -3,6 +3,7 @@ import json
 from typing import Dict, Any, List, Optional
 import google.generativeai as genai
 import google.ai.generativelanguage as glm
+from groq import Groq
 from data_processor import DataProcessor
 from statistics_module import calculate_statistics, calculate_correlation
 from visualizations import create_visualization
@@ -15,12 +16,27 @@ if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
     print("✓ Gemini AI configured")
 else:
-    print("⚠️  Warning: GEMINI_API_KEY not set. AI features will not work.")
+    print("⚠️  Warning: GEMINI_API_KEY not set.")
+
+# Configure Groq
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+if GROQ_API_KEY:
+    groq_client = Groq(api_key=GROQ_API_KEY)
+    print("✓ Groq AI configured")
+else:
+    groq_client = None
+    print("⚠️  Warning: GROQ_API_KEY not set.")
+
+# At least one provider must be configured
+if not GEMINI_API_KEY and not GROQ_API_KEY:
+    print("❌ ERROR: No AI provider configured. Set GEMINI_API_KEY or GROQ_API_KEY.")
 
 class AIService:
     def __init__(self, data_processor: DataProcessor):
         """Initialize AI service with shared data processor instance."""
         self.data_processor = data_processor
+        self.gemini_available = bool(GEMINI_API_KEY)
+        self.groq_available = bool(GROQ_API_KEY)
         
         # Initialize Gemini model with function calling using proper glm format
         if GEMINI_API_KEY:
@@ -98,13 +114,54 @@ class AIService:
         self,
         session_id: str,
         message: str,
+        user_id: str,
+        provider: str = "auto"
+    ) -> Dict[str, Any]:
+        """Process user message using AI (Gemini or Groq) with function calling
+        
+        Args:
+            session_id: The data session ID
+            message: User's message
+            user_id: User ID
+            provider: 'gemini', 'groq', or 'auto' (auto selects best available)
+        """
+        
+        # Determine which provider to use
+        if provider == "auto":
+            if self.groq_available:
+                provider = "groq"
+            elif self.gemini_available:
+                provider = "gemini"
+            else:
+                return {
+                    "message": "⚠️ No AI provider configured. Please set GEMINI_API_KEY or GROQ_API_KEY.",
+                    "function_calls": None,
+                    "results": None
+                }
+        
+        # Route to appropriate provider
+        if provider == "groq" and self.groq_available:
+            return await self._process_with_groq(session_id, message, user_id)
+        elif provider == "gemini" and self.gemini_available:
+            return await self._process_with_gemini(session_id, message, user_id)
+        else:
+            return {
+                "message": f"⚠️ {provider.capitalize()} is not available. Please configure the API key.",
+                "function_calls": None,
+                "results": None
+            }
+    
+    async def _process_with_gemini(
+        self,
+        session_id: str,
+        message: str,
         user_id: str
     ) -> Dict[str, Any]:
         """Process user message using Gemini AI with function calling"""
         
         if not self.model:
             return {
-                "message": "⚠️ AI service not configured. Please set GEMINI_API_KEY environment variable.",
+                "message": "⚠️ Gemini not configured.",
                 "function_calls": None,
                 "results": None
             }
@@ -259,6 +316,151 @@ Analyze what they need and call the appropriate function(s) to help them.
                 "message": f"I encountered an error: {str(e)}. Could you please rephrase your request?",
                 "function_calls": None,
                 "results": None
+            }
+    
+    async def _process_with_groq(
+        self,
+        session_id: str,
+        message: str,
+        user_id: str
+    ) -> Dict[str, Any]:
+        """Process user message using Groq AI with tool calling"""
+        
+        if not groq_client:
+            return {
+                "message": "⚠️ Groq not configured.",
+                "function_calls": None,
+                "results": None
+            }
+        
+        # Get dataset info for context
+        try:
+            df = self.data_processor.get_dataframe(session_id)
+            dataset_context = f"""You are analyzing a dataset with:
+- {len(df)} rows
+- {len(df.columns)} columns
+- Column names: {', '.join(df.columns.tolist())}
+- Column types: {', '.join([f"{col} ({df[col].dtype})" for col in df.columns[:10]])}
+
+Available functions:
+1. get_statistics(columns: str) - Calculate mean, median, std, min, max, quartiles
+2. create_visualization(chart_type: str, x_column: str, y_column: str, title: str) - Create charts
+3. clean_data(action: str, method: str) - Clean data (handle_missing, remove_outliers, remove_duplicates)
+
+User request: {message}
+
+Analyze the request and provide a helpful response. If you need to call a function, describe what should be done."""
+        except:
+            dataset_context = f"User message: {message}\n\nNote: No dataset loaded. Suggest uploading a dataset first."
+        
+        try:
+            # Use Groq's chat completion (Groq uses OpenAI-compatible API but simpler function calling)
+            response = groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": "You are a helpful data analysis assistant. Analyze user requests and suggest appropriate data operations."},
+                    {"role": "user", "content": dataset_context}
+                ],
+                temperature=0.7,
+                max_tokens=2048
+            )
+            
+            ai_message = response.choices[0].message.content
+            
+            # Parse AI response for function calls (simple keyword matching for Groq)
+            function_calls_made = []
+            results = []
+            chart_data = None
+            data_preview = None
+            
+            # Detect if AI suggests statistics
+            if any(keyword in ai_message.lower() for keyword in ['statistics', 'summary', 'mean', 'median', 'std']):
+                try:
+                    result = self.data_processor.calculate_statistics(session_id)
+                    results.append(result)
+                    function_calls_made.append('get_statistics')
+                except Exception as e:
+                    results.append({"error": str(e)})
+            
+            # Detect if AI suggests visualization
+            chart_keywords = {
+                'histogram': 'histogram',
+                'scatter plot': 'scatter',
+                'bar chart': 'bar',
+                'line chart': 'line',
+                'correlation': 'correlation',
+                'heatmap': 'heatmap'
+            }
+            
+            for keyword, chart_type in chart_keywords.items():
+                if keyword in ai_message.lower():
+                    try:
+                        df = self.data_processor.get_dataframe(session_id)
+                        numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
+                        
+                        if chart_type == 'histogram' and len(numeric_cols) >= 1:
+                            chart_data = self.data_processor.create_visualization(
+                                session_id,
+                                chart_type='histogram',
+                                x_column=numeric_cols[0],
+                                parameters={"title": f"Distribution of {numeric_cols[0]}"}
+                            )
+                        elif chart_type in ['scatter', 'line', 'bar'] and len(numeric_cols) >= 2:
+                            chart_data = self.data_processor.create_visualization(
+                                session_id,
+                                chart_type=chart_type,
+                                x_column=numeric_cols[0],
+                                y_column=numeric_cols[1],
+                                parameters={"title": f"{chart_type.title()} Chart"}
+                            )
+                        elif chart_type == 'correlation':
+                            chart_data = self.data_processor.create_visualization(
+                                session_id,
+                                chart_type='correlation',
+                                parameters={"title": "Correlation Matrix"}
+                            )
+                        
+                        function_calls_made.append('create_visualization')
+                        results.append({"visualization": "created"})
+                        break
+                    except Exception as e:
+                        results.append({"error": str(e)})
+            
+            # Detect cleaning operations
+            if any(keyword in ai_message.lower() for keyword in ['missing', 'impute', 'fill']):
+                try:
+                    result = self.data_processor.clean_data(
+                        session_id,
+                        parameters={
+                            "handleMissing": True,
+                            "missingMethod": "mean"
+                        }
+                    )
+                    results.append(result)
+                    data_preview = result.get('preview')
+                    function_calls_made.append('clean_data')
+                except Exception as e:
+                    results.append({"error": str(e)})
+            
+            # Generate suggested actions
+            suggested_actions = self._generate_suggestions(session_id, function_calls_made)
+            
+            return {
+                "message": ai_message,
+                "function_calls": function_calls_made if function_calls_made else None,
+                "results": results if results else None,
+                "data_preview": data_preview,
+                "chart_data": chart_data,
+                "suggested_actions": suggested_actions,
+                "provider": "groq"
+            }
+        
+        except Exception as e:
+            return {
+                "message": f"I encountered an error: {str(e)}. Could you please rephrase your request?",
+                "function_calls": None,
+                "results": None,
+                "error": str(e)
             }
     
     def _generate_suggestions(self, session_id: str, recent_actions: List[str]) -> List[Dict[str, str]]:
