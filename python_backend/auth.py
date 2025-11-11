@@ -75,6 +75,7 @@ async def signup(request: SignUpRequest):
     
     if USE_SUPABASE and supabase:
         try:
+            # Create user in Supabase Auth
             response = supabase.auth.sign_up({
                 "email": request.email,
                 "password": request.password,
@@ -87,6 +88,18 @@ async def signup(request: SignUpRequest):
             
             if response.user is None:
                 raise HTTPException(status_code=400, detail="Signup failed - user not created")
+            
+            # Create user profile in database
+            try:
+                supabase_admin.table("users").insert({
+                    "id": response.user.id,
+                    "username": request.username,
+                    "email": response.user.email
+                }).execute()
+                print(f"✓ User profile created in database for {response.user.email}")
+            except Exception as db_error:
+                print(f"⚠️  Database profile creation error: {str(db_error)}")
+                # Continue even if profile creation fails - auth user was created
             
             # Check if session exists (it might be None if email confirmation is required)
             if response.session is None:
