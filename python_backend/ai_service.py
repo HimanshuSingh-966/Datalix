@@ -350,7 +350,7 @@ INSTRUCTIONS:
                 "message": ai_message,
                 "function_calls": function_calls_made if function_calls_made else None,
                 "results": results if results else None,
-                "data_preview": data_preview,
+                "data_preview": data_preview if data_preview else None,
                 "chart_data": chart_data,
                 "suggested_actions": suggested_actions
             }
@@ -520,7 +520,7 @@ INSTRUCTIONS:
                 "message": ai_message,
                 "function_calls": function_calls_made if function_calls_made else None,
                 "results": results if results else None,
-                "data_preview": data_preview,
+                "data_preview": data_preview if data_preview else None,
                 "chart_data": chart_data,
                 "suggested_actions": suggested_actions,
                 "provider": "groq"
