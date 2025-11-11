@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from auth import get_current_user, router as auth_router
 from data_processor import DataProcessor
 from ai_service import AIService
+from example_data import get_example_dataset, list_example_datasets
 
 load_dotenv()
 
@@ -69,9 +70,12 @@ async def upload_file(
         # Read file content
         content = await file.read()
         
+        # Get filename, default to 'unknown.csv' if None
+        filename = file.filename or 'unknown.csv'
+        
         # Process the file
         session_id, result = await data_processor.process_upload(
-            content, file.filename, user['id']
+            content, filename, user['id']
         )
         
         return {
@@ -91,11 +95,12 @@ async def chat(
 ):
     """Process natural language queries using AI (Groq or Gemini)"""
     try:
+        provider = request.provider or "auto"
         response = await ai_service.process_message(
             session_id=request.session_id,
             message=request.message,
             user_id=user['id'],
-            provider=request.provider
+            provider=provider
         )
         return response
     except Exception as e:
@@ -143,12 +148,13 @@ async def create_visualization(
 ):
     """Create a visualization"""
     try:
+        params = request.parameters or {}
         chart = data_processor.create_visualization(
             session_id=request.session_id,
-            chart_type=request.parameters.get('chart_type'),
-            x_column=request.parameters.get('x_column'),
-            y_column=request.parameters.get('y_column'),
-            parameters=request.parameters
+            chart_type=params.get('chart_type', 'scatter'),
+            x_column=params.get('x_column', ''),
+            y_column=params.get('y_column', ''),
+            parameters=params
         )
         return {"chartData": chart}
     except Exception as e:
@@ -161,9 +167,10 @@ async def clean_data(
 ):
     """Clean dataset (handle missing values, outliers, duplicates)"""
     try:
+        params = request.parameters or {}
         result = data_processor.clean_data(
             session_id=request.session_id,
-            parameters=request.parameters
+            parameters=params
         )
         return result
     except Exception as e:
@@ -176,10 +183,11 @@ async def ml_analysis(
 ):
     """Perform ML analysis (clustering, anomaly detection, etc.)"""
     try:
+        params = request.parameters or {}
         result = data_processor.ml_analysis(
             session_id=request.session_id,
-            analysis_type=request.parameters.get('analysis_type'),
-            parameters=request.parameters
+            analysis_type=params.get('analysis_type', 'clustering'),
+            parameters=params
         )
         return result
     except Exception as e:
@@ -192,10 +200,11 @@ async def export_data(
 ):
     """Export dataset in various formats"""
     try:
+        params = request.parameters or {}
         file_path = data_processor.export_data(
             session_id=request.session_id,
-            format=request.parameters.get('format', 'csv'),
-            parameters=request.parameters
+            format=params.get('format', 'csv'),
+            parameters=params
         )
         return FileResponse(
             file_path,
@@ -223,6 +232,44 @@ async def delete_session(
     try:
         data_processor.delete_session(session_id)
         return {"message": "Session deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/example-datasets")
+async def get_example_datasets():
+    """List available example datasets"""
+    return {"datasets": list_example_datasets()}
+
+@app.post("/load-example-dataset")
+async def load_example_dataset(
+    dataset_id: str,
+    user: Dict = Depends(get_current_user)
+):
+    """Load an example dataset"""
+    try:
+        csv_data = get_example_dataset(dataset_id)
+        
+        datasets = list_example_datasets()
+        dataset_info = next((d for d in datasets if d['id'] == dataset_id), None)
+        if not dataset_info:
+            raise HTTPException(status_code=404, detail="Dataset not found")
+        
+        filename = f"{dataset_id}_example.csv"
+        
+        session_id, result = await data_processor.process_upload(
+            csv_data, filename, user['id']
+        )
+        
+        return {
+            "sessionId": session_id,
+            "datasetInfo": result["dataset_info"],
+            "qualityScore": result["quality_score"],
+            "preview": result["preview"],
+            "issues": result["issues"],
+            "exampleDatasetName": dataset_info['name']
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

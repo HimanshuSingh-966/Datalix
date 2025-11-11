@@ -8,6 +8,8 @@ import { SuggestedActions } from '@/components/SuggestedActions';
 import { FileUpload } from '@/components/FileUpload';
 import { TypingIndicator } from '@/components/LoadingStates';
 import { EmptyState } from '@/components/EmptyStates';
+import { ExampleDatasetDialog } from '@/components/ExampleDatasetDialog';
+import { SettingsDialog } from '@/components/SettingsDialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -34,6 +36,8 @@ export default function ChatPage() {
 
   const [input, setInput] = useState('');
   const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [showExampleDialog, setShowExampleDialog] = useState(false);
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
@@ -205,10 +209,40 @@ export default function ChatPage() {
   };
 
   const handleExampleDataset = () => {
-    toast({ 
-      description: 'Example datasets feature coming soon! For now, please upload your own data.',
-      variant: 'default'
+    setShowExampleDialog(true);
+  };
+
+  const handleExampleDatasetLoaded = (data: any) => {
+    useChatStore.setState({ sessionId: data.sessionId });
+    setCurrentDataset(data.preview);
+    
+    const issues = data.issues ?? [];
+    setQualityScore({
+      overallScore: data.qualityScore,
+      completeness: 0,
+      consistency: 0,
+      uniqueness: 0,
+      validity: 0,
+      columnMetrics: [],
+      issues: issues,
+      recommendations: []
     });
+
+    const message: ChatMessage = {
+      id: generateId(),
+      role: 'assistant',
+      content: `✓ Loaded example dataset: **${data.exampleDatasetName}**\n\n**${data.datasetInfo.rows} rows × ${data.datasetInfo.columns} columns**\n\nQuality Score: **${Math.round(data.qualityScore)}/100**\n\nI've loaded a sample dataset for you to explore. ${issues.length > 0 ? `Found ${issues.length} potential issues.` : 'The data looks good!'} Try asking me about the data!`,
+      timestamp: new Date(),
+      dataPreview: data.preview,
+      suggestedActions: [
+        { label: 'Show Statistics', prompt: 'Show statistical summary' },
+        { label: 'Correlation Matrix', prompt: 'Show correlation matrix' },
+        { label: 'Create Visualization', prompt: 'Create a scatter plot' },
+        ...(issues.length > 0 ? [{ label: 'Clean Data', prompt: 'Help me clean this dataset' }] : [])
+      ],
+    };
+
+    addMessage(message);
   };
 
   const handleSessionHistory = () => {
@@ -219,10 +253,7 @@ export default function ChatPage() {
   };
 
   const handleSettings = () => {
-    toast({ 
-      description: 'Settings feature coming soon!',
-      variant: 'default'
-    });
+    setShowSettingsDialog(true);
   };
 
   return (
@@ -236,8 +267,8 @@ export default function ChatPage() {
         qualityScore={qualityScore?.overallScore}
       />
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-6 py-6">
+      <div className="flex-1 overflow-y-auto flex justify-center">
+        <div className="w-full max-w-3xl px-4 py-6">
           {messages.length === 0 ? (
             <EmptyState 
               type="no-messages" 
@@ -251,7 +282,6 @@ export default function ChatPage() {
                   <MessageBubble
                     message={message}
                     onRegenerate={() => {
-                      // TODO: Implement regenerate
                       toast({ description: 'Regenerate feature coming soon!' });
                     }}
                   />
@@ -295,8 +325,8 @@ export default function ChatPage() {
         </div>
       </div>
 
-      <div className="border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-4xl mx-auto px-6 py-4">
+      <div className="border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex justify-center">
+        <div className="w-full max-w-3xl px-4 py-4">
           <div className="flex items-end gap-3">
             <Button
               variant="ghost"
@@ -368,6 +398,17 @@ export default function ChatPage() {
           <FileUpload onUpload={handleUpload} />
         </DialogContent>
       </Dialog>
+
+      <ExampleDatasetDialog
+        open={showExampleDialog}
+        onOpenChange={setShowExampleDialog}
+        onDatasetLoaded={handleExampleDatasetLoaded}
+      />
+
+      <SettingsDialog
+        open={showSettingsDialog}
+        onOpenChange={setShowSettingsDialog}
+      />
     </div>
   );
 }
