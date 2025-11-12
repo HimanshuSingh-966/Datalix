@@ -107,6 +107,14 @@ class AIService:
                             },
                             required=["action"]
                         )
+                    ),
+                    glm.FunctionDeclaration(
+                        name="show_data_preview",
+                        description="Display the current dataset table to show the user the data",
+                        parameters=glm.Schema(
+                            type=glm.Type.OBJECT,
+                            properties={}
+                        )
                     )
                 ]
             )
@@ -287,6 +295,15 @@ INSTRUCTIONS:
                                 )
                                 results.append(result)
                                 data_preview = result.get('preview')
+                            
+                            elif function_name == "show_data_preview":
+                                # Get the current dataset preview from session
+                                preview = self.data_processor.sessions[session_id].get('preview')
+                                if preview:
+                                    data_preview = preview
+                                    results.append({"message": "Showing data preview"})
+                                else:
+                                    results.append({"error": "No dataset loaded"})
                             
                             elif function_name == "ml_analysis":
                                 result = self.data_processor.ml_analysis(
@@ -510,6 +527,21 @@ INSTRUCTIONS:
                     results.append(result)
                     data_preview = result.get('preview')
                     function_calls_made.append('clean_data')
+                except Exception as e:
+                    results.append({"error": str(e)})
+            
+            # Detect data preview requests
+            show_keywords = ['show data', 'display data', 'view data', 'show table', 'display table', 
+                           'view table', 'see data', 'see table', 'preview data', 'show me the data']
+            if any(keyword in ai_message.lower() for keyword in show_keywords):
+                try:
+                    preview = self.data_processor.sessions[session_id].get('preview')
+                    if preview:
+                        data_preview = preview
+                        results.append({"message": "Showing data preview"})
+                        function_calls_made.append('show_data_preview')
+                    else:
+                        results.append({"error": "No dataset loaded"})
                 except Exception as e:
                     results.append({"error": str(e)})
             
