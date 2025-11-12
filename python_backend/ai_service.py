@@ -294,7 +294,8 @@ INSTRUCTIONS:
                                     parameters=function_args
                                 )
                                 results.append(result)
-                                data_preview = result.get('preview')
+                                # Don't automatically show preview after cleaning
+                                # Users can explicitly request to see the data if needed
                             
                             elif function_name == "show_data_preview":
                                 # Get the current dataset and create a fresh preview
@@ -525,7 +526,8 @@ INSTRUCTIONS:
                         }
                     )
                     results.append(result)
-                    data_preview = result.get('preview')
+                    # Don't automatically show preview after cleaning
+                    # Users can explicitly request to see the data if needed
                     function_calls_made.append('clean_data')
                 except Exception as e:
                     results.append({"error": str(e)})
