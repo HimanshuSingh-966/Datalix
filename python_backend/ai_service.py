@@ -297,12 +297,12 @@ INSTRUCTIONS:
                                 data_preview = result.get('preview')
                             
                             elif function_name == "show_data_preview":
-                                # Get the current dataset preview from session
-                                preview = self.data_processor.sessions[session_id].get('preview')
-                                if preview:
-                                    data_preview = preview
+                                # Get the current dataset and create a fresh preview
+                                try:
+                                    df = self.data_processor.get_dataframe(session_id)
+                                    data_preview = self.data_processor._create_preview(df, max_rows=100)
                                     results.append({"message": "Showing data preview"})
-                                else:
+                                except Exception as e:
                                     results.append({"error": "No dataset loaded"})
                             
                             elif function_name == "ml_analysis":
@@ -535,15 +535,12 @@ INSTRUCTIONS:
                            'view table', 'see data', 'see table', 'preview data', 'show me the data']
             if any(keyword in ai_message.lower() for keyword in show_keywords):
                 try:
-                    preview = self.data_processor.sessions[session_id].get('preview')
-                    if preview:
-                        data_preview = preview
-                        results.append({"message": "Showing data preview"})
-                        function_calls_made.append('show_data_preview')
-                    else:
-                        results.append({"error": "No dataset loaded"})
+                    df = self.data_processor.get_dataframe(session_id)
+                    data_preview = self.data_processor._create_preview(df, max_rows=100)
+                    results.append({"message": "Showing data preview"})
+                    function_calls_made.append('show_data_preview')
                 except Exception as e:
-                    results.append({"error": str(e)})
+                    results.append({"error": "No dataset loaded"})
             
             # Generate suggested actions
             suggested_actions = self._generate_suggestions(session_id, function_calls_made)
