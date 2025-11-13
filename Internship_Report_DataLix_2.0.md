@@ -2,7 +2,7 @@
 
 ## on
 
-# DataLix 2.0: AI-Powered Data Analysis Platform
+# DataLix AI: AI-Powered Data Analysis Platform
 
 Submitted in partial fulfillment of the requirements for the award of the degree of
 
@@ -38,7 +38,7 @@ Batch
 
 # Certificate by Company/Industry/Institute
 
-This is to certify that the project report entitled **"DataLix 2.0: AI-Powered Data Analysis Platform"** being submitted by Mr/Ms **[Student Name]** in partial fulfillment for the award of the Degree of Bachelor of Technology to the SGT University is a record of bonafide work carried out by him/her under my guidance and supervision during the year 2023-2025.
+This is to certify that the project report entitled **"DataLix AI: AI-Powered Data Analysis Platform"** being submitted by Mr/Ms **[Student Name]** in partial fulfillment for the award of the Degree of Bachelor of Technology to the SGT University is a record of bonafide work carried out by him/her under my guidance and supervision during the year 2023-2025.
 
 The results embodied in this project report have not been submitted to any other University or Institute for the award of any Degree.
 
@@ -80,9 +80,9 @@ Signature of the Head of Department
 
 # Abstract
 
-This report presents the development and implementation of **DataLix 2.0**, an advanced AI-powered data analysis platform designed to democratize data science for users of all skill levels. The application leverages cutting-edge artificial intelligence technologies, specifically Google's Gemini and Groq AI models, to provide intelligent data analysis capabilities through natural language interactions.
+This report presents the development and implementation of **DataLix AI**, an advanced AI-powered data analysis platform designed to democratize data science for users of all skill levels. The application leverages cutting-edge artificial intelligence technologies, specifically Google's Gemini and Groq AI models, to provide intelligent data analysis capabilities through natural language interactions.
 
-DataLix 2.0 addresses the growing need for accessible data analysis tools in an era where data-driven decision-making is crucial across industries. The platform enables users to upload datasets in various formats (CSV, Excel, JSON), receive automated data quality assessments, perform statistical analysis, generate visualizations, and obtain AI-driven insights—all through conversational interactions.
+DataLix AI addresses the growing need for accessible data analysis tools in an era where data-driven decision-making is crucial across industries. The platform enables users to upload datasets in various formats (CSV, Excel, JSON), receive automated data quality assessments, perform statistical analysis, generate visualizations, and obtain AI-driven insights—all through conversational interactions.
 
 Key features include real-time data quality reporting, interactive AI chat interface, advanced statistical analysis, dynamic visualization generation, and intelligent data cleaning capabilities. The system architecture employs a modern full-stack approach with React.js frontend, FastAPI backend, and integration with multiple AI providers for robust performance.
 
@@ -232,7 +232,7 @@ To develop cutting-edge AI-powered tools that transform raw data into actionable
 
 ## 1.4 Internship Overview
 
-The internship period spanned from **[Start Date]** to **[End Date]**, during which I was assigned to the Product Development team. The primary objective was to design and develop DataLix 2.0, an AI-powered data analysis platform.
+The internship period spanned from **[Start Date]** to **[End Date]**, during which I was assigned to the Product Development team. The primary objective was to design and develop DataLix AI, an AI-powered data analysis platform.
 
 **Key Responsibilities:**
 - Full-stack development using React.js and FastAPI
@@ -478,7 +478,7 @@ Develop an AI-powered data analysis platform that enables users to analyze data 
 
 **Level 0 DFD (Context Diagram):**
 ```
-User → DataLix 2.0 System → AI Insights
+User → DataLix AI System → AI Insights
                 ↓
            Database
 ```
@@ -629,7 +629,7 @@ Dynamic chart creation:
 
 ## 5.4 Comparison with Existing Solutions
 
-| Feature | DataLix 2.0 | Tableau | Power BI | Python |
+| Feature | DataLix AI | Tableau | Power BI | Python |
 |---------|-------------|---------|----------|--------|
 | Natural Language | ✓ | Partial | Partial | ✗ |
 | Auto Quality Check | ✓ | ✗ | Partial | ✗ |
@@ -643,7 +643,7 @@ Dynamic chart creation:
 
 ## 6.1 Conclusion
 
-DataLix 2.0 successfully demonstrates that advanced data analysis can be made accessible through AI-powered natural language interfaces. The project achieved all primary objectives:
+DataLix AI successfully demonstrates that advanced data analysis can be made accessible through AI-powered natural language interfaces. The project achieved all primary objectives:
 
 1. ✓ Intuitive data upload and analysis
 2. ✓ Automated quality assessment
@@ -700,7 +700,7 @@ This project contributes to the democratization of data science by lowering tech
    - Plugin architecture
    - API marketplace
 
-The foundation built in DataLix 2.0 provides a solid platform for these future enhancements, positioning it as a comprehensive data analysis solution for the modern era.
+The foundation built in DataLix AI provides a solid platform for these future enhancements, positioning it as a comprehensive data analysis solution for the modern era.
 
 ---
 

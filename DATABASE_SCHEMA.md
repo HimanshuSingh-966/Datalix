@@ -1,6 +1,6 @@
-# DataLix 2.0 Database Schema
+# DataLix AI Database Schema
 
-This document describes the complete database schema for DataLix 2.0, an AI-powered data analysis platform.
+This document describes the complete database schema for DataLix AI, an AI-powered data analysis platform.
 
 ## Overview
 

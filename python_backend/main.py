@@ -14,7 +14,7 @@ from example_data import get_example_dataset, list_example_datasets
 
 load_dotenv()
 
-app = FastAPI(title="DataLix 2.0 API", version="2.0.0")
+app = FastAPI(title="DataLix AI API", version="2.0.0")
 
 # CORS middleware
 app.add_middleware(
@@ -54,7 +54,7 @@ class OperationRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"message": "DataLix 2.0 API", "version": "2.0.0", "status": "running"}
+    return {"message": "DataLix AI API", "version": "2.0.0", "status": "running"}
 
 @app.get("/health")
 async def health_check():

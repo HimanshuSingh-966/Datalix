@@ -1,8 +1,8 @@
-# DataLix 2.0 - AI-Powered Data Analysis Platform
+# DataLix AI - AI-Powered Data Analysis Platform
 
 ## Overview
 
-DataLix 2.0 is a conversational AI platform for data analysis that allows users to upload datasets (CSV, Excel, JSON, Parquet) and interact with them using natural language. The application combines a React/TypeScript frontend with a Python FastAPI backend, leveraging AI providers (Gemini and Groq) to process user queries and perform data operations like cleaning, statistical analysis, visualization, and machine learning tasks.
+DataLix AI is a conversational AI platform for data analysis that allows users to upload datasets (CSV, Excel, JSON, Parquet) and interact with them using natural language. The application combines a React/TypeScript frontend with a Python FastAPI backend, leveraging AI providers (Gemini and Groq) to process user queries and perform data operations like cleaning, statistical analysis, visualization, and machine learning tasks.
 
 ## User Preferences
 

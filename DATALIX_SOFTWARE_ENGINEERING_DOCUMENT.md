@@ -1,23 +1,23 @@
 # Software Engineering Document
-## DataLix 2.0 - AI-Powered Data Analysis Platform
+## DataLix AI - AI-Powered Data Analysis Platform
 
 ---
 
 ## Experiment 1
 
-### Aim: Draft a project plan for DataLix 2.0
+### Aim: Draft a project plan for DataLix AI
 
-## DATALIX 2.0 - AI-POWERED DATA ANALYSIS PLATFORM
+## DATALIX AI - AI-POWERED DATA ANALYSIS PLATFORM
 
-DataLix 2.0 is a comprehensive AI-powered data analysis platform designed to democratize data science and make complex data analysis accessible to users of all skill levels. It acts as a centralized digital platform where data analysts, business users, researchers, students, and data scientists can upload datasets and interact with them using natural language.
+DataLix AI is a comprehensive AI-powered data analysis platform designed to democratize data science and make complex data analysis accessible to users of all skill levels. It acts as a centralized digital platform where data analysts, business users, researchers, students, and data scientists can upload datasets and interact with them using natural language.
 
-DataLix 2.0 replaces traditional complex data analysis tools and coding requirements with an intuitive, conversational interface. This not only enhances productivity but also reduces the learning curve, ensures accessibility for non-technical users, and improves overall data-driven decision-making.
+DataLix AI replaces traditional complex data analysis tools and coding requirements with an intuitive, conversational interface. This not only enhances productivity but also reduces the learning curve, ensures accessibility for non-technical users, and improves overall data-driven decision-making.
 
 The platform integrates various data analysis functions such as file upload (CSV, Excel, JSON, Parquet), automated data quality assessment, statistical analysis, data cleaning, outlier detection, missing value handling, data visualization, machine learning analysis, and data export into a single unified platform.
 
-With DataLix 2.0, users can experience faster insights, instant data quality feedback, AI-powered recommendations, and administrators can monitor usage and performance in real time through analytics dashboards.
+With DataLix AI, users can experience faster insights, instant data quality feedback, AI-powered recommendations, and administrators can monitor usage and performance in real time through analytics dashboards.
 
-### Key Features of DataLix 2.0
+### Key Features of DataLix AI
 
 #### 1. File Upload & Management
 - Supports multiple file formats: CSV, Excel (.xlsx, .xls), JSON, Parquet
@@ -97,7 +97,7 @@ With DataLix 2.0, users can experience faster insights, instant data quality fee
 - Role-based access control
 - Session persistence and management
 
-### Advantages of DataLix 2.0
+### Advantages of DataLix AI
 
 - **Accessibility**: Makes data science accessible to non-technical users through natural language
 - **Efficiency**: Reduces time from data upload to insights from hours to minutes
@@ -130,9 +130,9 @@ Data analysts and business users often face significant challenges when working 
 - Difficulty in reproducing analysis steps
 - Limited collaboration capabilities
 
-To solve these challenges, DataLix 2.0 provides an AI-powered conversational interface that automates and simplifies data analysis operations. Users simply describe what they want to do in natural language, and the AI handles the technical implementation.
+To solve these challenges, DataLix AI provides an AI-powered conversational interface that automates and simplifies data analysis operations. Users simply describe what they want to do in natural language, and the AI handles the technical implementation.
 
-### Key Benefits of DataLix 2.0
+### Key Benefits of DataLix AI
 
 1. **Natural Language Interface**: Users can ask questions in plain English instead of writing code
 2. **Automated Quality Assessment**: Instant feedback on data quality with actionable recommendations
@@ -148,7 +148,7 @@ To solve these challenges, DataLix 2.0 provides an AI-powered conversational int
 
 ### Aim: Development of SRS document
 
-## Modules of DataLix 2.0
+## Modules of DataLix AI
 
 ### 1.1 User Authentication Module
 
@@ -279,7 +279,7 @@ Manage user analysis sessions:
 
 ### 2.1 Functional Requirements
 
-Functional requirements define the core operations that DataLix 2.0 must perform to meet its purpose.
+Functional requirements define the core operations that DataLix AI must perform to meet its purpose.
 
 #### A. File Upload & Processing
 
@@ -469,7 +469,7 @@ Non-functional requirements define the quality attributes and constraints of the
 
 ### Product Perspective
 
-DataLix 2.0 will be deployed as a web-based platform accessible through modern web browsers. The system architecture follows a three-tier approach:
+DataLix AI will be deployed as a web-based platform accessible through modern web browsers. The system architecture follows a three-tier approach:
 
 **Frontend (React + TypeScript):**
 - Modern, responsive web interface
@@ -565,7 +565,7 @@ A DFD (Data Flow Diagram) is a graphical tool that visually maps out the flow of
 
 ### Level 0 DFD: Context Diagram
 
-The context diagram provides the highest-level view of DataLix 2.0, showing the system as a single process and its interactions with external entities.
+The context diagram provides the highest-level view of DataLix AI, showing the system as a single process and its interactions with external entities.
 
 ```mermaid
 flowchart TB
@@ -574,7 +574,7 @@ flowchart TB
     Groq((Groq AI))
     Supabase((Supabase Auth))
     
-    User -->|Upload Dataset| DataLix[DataLix 2.0 System]
+    User -->|Upload Dataset| DataLix[DataLix AI System]
     User -->|Natural Language Query| DataLix
     User -->|Login Credentials| DataLix
     
@@ -596,7 +596,7 @@ flowchart TB
 
 ### Level 1 DFD: First Level Diagram
 
-The Level 1 DFD breaks down the DataLix 2.0 system into its major subprocesses, showing the main functions and data flows.
+The Level 1 DFD breaks down the DataLix AI system into its major subprocesses, showing the main functions and data flows.
 
 ```mermaid
 flowchart TB
@@ -735,7 +735,7 @@ flowchart TB
 
 An ER Diagram (Entity-Relationship Diagram) is a powerful tool to analyze and design the structure of a database. It shows the relationships between different entities and their attributes.
 
-The DataLix 2.0 database keeps track of users, analysis sessions, messages, and dataset information with the following considerations:
+The DataLix AI database keeps track of users, analysis sessions, messages, and dataset information with the following considerations:
 
 - The system maintains user accounts with secure authentication (email, hashed password)
 - Each user can have multiple analysis sessions
@@ -744,7 +744,7 @@ The DataLix 2.0 database keeps track of users, analysis sessions, messages, and 
 - Messages can contain chart data, data previews, and function calls
 - Sessions store dataset information including file type, quality metrics, and metadata
 
-### ER Diagram for DataLix 2.0
+### ER Diagram for DataLix AI
 
 ```mermaid
 erDiagram
@@ -853,7 +853,7 @@ erDiagram
 
 A Use Case Diagram is a visual representation that illustrates the interactions between users (actors) and a system. It captures the functional requirements, showing how different users engage with various use cases within the system.
 
-### Actors in DataLix 2.0
+### Actors in DataLix AI
 
 **Primary Actors:**
 - **User**: Data analysts, business users, researchers, students who upload datasets and perform analysis
@@ -898,7 +898,7 @@ A Use Case Diagram is a visual representation that illustrates the interactions 
 
 ```mermaid
 flowchart TB
-    subgraph DataLix2.0["DataLix 2.0 System"]
+    subgraph DataLix2.0["DataLix AI System"]
         Register[Register Account]
         Login[Login to System]
         Upload[Upload Dataset]
@@ -1171,7 +1171,7 @@ graph TB
 
 A class diagram visually represents the structure of a system by showing its classes, attributes, methods, and the relationships between them.
 
-### Class Diagram for DataLix 2.0
+### Class Diagram for DataLix AI
 
 ```mermaid
 classDiagram
@@ -1383,11 +1383,11 @@ classDiagram
 
 ### Aim: To draw a Gantt chart and Network diagram
 
-### Gantt Chart - DataLix 2.0 Development Timeline
+### Gantt Chart - DataLix AI Development Timeline
 
 ```mermaid
 gantt
-    title DataLix 2.0 Development Schedule
+    title DataLix AI Development Schedule
     dateFormat YYYY-MM-DD
     section Planning
     Requirements Analysis           :done, req, 2024-01-01, 7d
@@ -1432,7 +1432,7 @@ gantt
     Launch                         :milestone, deploy3, 2024-05-26, 1d
 ```
 
-### Network Diagram - DataLix 2.0 Task Dependencies
+### Network Diagram - DataLix AI Task Dependencies
 
 ```mermaid
 graph LR
@@ -1482,7 +1482,7 @@ graph LR
 
 ### Critical Path
 
-The critical path for DataLix 2.0 development:
+The critical path for DataLix AI development:
 1. Requirements Analysis → System Design → Backend Setup → File Upload → Quality Assessment → AI Service → Data Operations → API Integration → Testing → Deployment
 
 **Total Duration**: Approximately 5 months (150 days)
@@ -1502,11 +1502,11 @@ The critical path for DataLix 2.0 development:
 
 A Structure Chart represents the hierarchical structure of modules, breaking down the system into functional modules and describing their relationships.
 
-### Structured Chart for DataLix 2.0
+### Structured Chart for DataLix AI
 
 ```mermaid
 graph TB
-    Main[DataLix 2.0 Main System]
+    Main[DataLix AI Main System]
     
     Main --> Auth[Authentication Controller]
     Main --> Upload[Upload Controller]
@@ -1579,7 +1579,7 @@ graph TB
 ### Module Hierarchy Levels
 
 **Level 0 - Main Controller:**
-- DataLix 2.0 Main System (Entry Point)
+- DataLix AI Main System (Entry Point)
 
 **Level 1 - Primary Controllers:**
 - Authentication Controller
@@ -1619,19 +1619,19 @@ A Software Design Document provides a description of a software product in terms
 
 ---
 
-# Software Design Document: DataLix 2.0
+# Software Design Document: DataLix AI
 
 ## 1. Introduction
 
-This document outlines the design and architecture for DataLix 2.0, an AI-powered data analysis platform that democratizes data science through conversational AI.
+This document outlines the design and architecture for DataLix AI, an AI-powered data analysis platform that democratizes data science through conversational AI.
 
 ### 1.1 Purpose
 
-The purpose of this document is to provide a detailed overview of DataLix 2.0's design, including its architecture, modules, database schema, and technical specifications. It serves as a guide for development, implementation, and maintenance teams.
+The purpose of this document is to provide a detailed overview of DataLix AI's design, including its architecture, modules, database schema, and technical specifications. It serves as a guide for development, implementation, and maintenance teams.
 
 ### 1.2 Scope
 
-DataLix 2.0 covers the following key areas:
+DataLix AI covers the following key areas:
 
 - **File Management**: Upload and processing of CSV, Excel, JSON, Parquet files
 - **Data Quality Assessment**: Automated scoring and issue detection
@@ -1645,7 +1645,7 @@ DataLix 2.0 covers the following key areas:
 
 ## 2. System Architecture
 
-DataLix 2.0 adopts a modern three-tier architecture with clear separation of concerns.
+DataLix AI adopts a modern three-tier architecture with clear separation of concerns.
 
 ### 2.1 High-Level Architecture
 
@@ -2003,7 +2003,7 @@ VITE_SUPABASE_ANON_KEY=<anon-key>
 
 ## 12. Conclusion
 
-This design document provides a comprehensive blueprint for DataLix 2.0, an AI-powered data analysis platform. The architecture emphasizes:
+This design document provides a comprehensive blueprint for DataLix AI, an AI-powered data analysis platform. The architecture emphasizes:
 
 - **Accessibility**: Natural language interface for all skill levels
 - **Intelligence**: AI-driven insights and recommendations
@@ -2037,13 +2037,13 @@ The design enables rapid development and deployment while maintaining code quali
 
 ### 13.3 Contact Information
 
-For further inquiries about DataLix 2.0, please contact the development team.
+For further inquiries about DataLix AI, please contact the development team.
 
 ---
 
 **Document Version**: 1.0  
 **Last Updated**: 2025-01-13  
-**Project**: DataLix 2.0 - AI-Powered Data Analysis Platform  
+**Project**: DataLix AI - AI-Powered Data Analysis Platform  
 **Status**: Production Ready (MVP)
 
 ---

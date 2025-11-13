@@ -1,4 +1,4 @@
--- DataLix 2.0 - Complete Database Schema
+-- DataLix AI - Complete Database Schema
 -- PostgreSQL Database Initialization Script
 -- 
 -- This script creates all necessary tables, indexes, triggers, and functions

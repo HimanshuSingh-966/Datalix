@@ -1,8 +1,8 @@
-# DataLix 2.0 - Data Storage Architecture
+# DataLix AI - Data Storage Architecture
 
 ## Overview
 
-DataLix 2.0 uses a **hybrid storage architecture** that combines two different storage systems, each optimized for specific types of data:
+DataLix AI uses a **hybrid storage architecture** that combines two different storage systems, each optimized for specific types of data:
 
 1. **PostgreSQL Database** - For persistent user data and metadata
 2. **In-Memory Python Sessions** - For active dataset analysis

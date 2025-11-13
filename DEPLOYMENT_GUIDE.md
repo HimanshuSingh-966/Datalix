@@ -1,6 +1,6 @@
-# DataLix 2.0 Deployment Guide for Render
+# DataLix AI Deployment Guide for Render
 
-This guide will help you deploy your DataLix 2.0 AI-powered data analysis platform to Render.
+This guide will help you deploy your DataLix AI AI-powered data analysis platform to Render.
 
 ## Table of Contents
 1. [Overview](#overview)
@@ -15,7 +15,7 @@ This guide will help you deploy your DataLix 2.0 AI-powered data analysis platfo
 
 ## Overview
 
-DataLix 2.0 is a full-stack application with:
+DataLix AI is a full-stack application with:
 - **Frontend**: React + Vite (served by Express)
 - **Backend API**: Python FastAPI
 - **Database**: PostgreSQL (Supabase)
@@ -571,4 +571,4 @@ If you encounter issues:
 
 ---
 
-**Congratulations!** Your DataLix 2.0 application is now deployed and ready for use! 🎉
+**Congratulations!** Your DataLix AI application is now deployed and ready for use! 🎉

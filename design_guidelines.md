@@ -1,4 +1,4 @@
-# DataLix 2.0 Design Guidelines
+# DataLix AI Design Guidelines
 
 ## Design Approach
 
