@@ -59,6 +59,9 @@ app.use('/api', createProxyMiddleware({
   target: 'http://localhost:8001',
   changeOrigin: true,
   logLevel: 'debug',
+  pathRewrite: {
+    '^/api': '', // Strip /api prefix when forwarding to Python backend
+  },
   onProxyReq: (proxyReq, req) => {
     // Forward authorization headers
     if (req.headers.authorization) {

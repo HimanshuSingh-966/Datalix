@@ -18,7 +18,7 @@ async function getUserFromAuth(req: Request): Promise<string | null> {
   const token = authHeader.substring(7);
   
   try {
-    const response = await fetch('http://localhost:8001/api/auth/verify', {
+    const response = await fetch('http://localhost:8001/auth/verify', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
