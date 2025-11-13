@@ -37,10 +37,10 @@ export function MessageBubble({ message, onRegenerate, onEdit, onDelete }: Messa
     >
       {/* Avatar */}
       <div
-        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${
+        className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
           isUser
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-accent text-accent-foreground'
+            ? 'bg-muted text-foreground'
+            : 'bg-primary/10 text-primary border border-primary/20'
         }`}
         data-testid={`avatar-${message.role}`}
       >

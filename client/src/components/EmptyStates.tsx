@@ -11,51 +11,48 @@ interface EmptyStateProps {
 export function EmptyState({ type, onAction, onExampleDataset }: EmptyStateProps) {
   if (type === 'no-messages') {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-6 text-center" data-testid="empty-state-no-messages">
-        <div className="p-6 rounded-full bg-primary/10 mb-6">
-          <Sparkles className="h-12 w-12 text-primary" data-testid="icon-welcome" />
-        </div>
-        <h2 className="text-2xl font-semibold mb-2" data-testid="text-welcome-title">Welcome to DataLix AI!</h2>
-        <p className="text-muted-foreground mb-6 max-w-md" data-testid="text-welcome-description">
-          Upload a dataset and start analyzing with natural language. Clean, transform, visualize, and export your data—all through conversation.
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center" data-testid="empty-state-no-messages">
+        <h1 className="font-heading text-5xl md:text-6xl mb-4 text-foreground" data-testid="text-welcome-title">
+          Welcome to DataLix
+        </h1>
+        <p className="text-muted-foreground text-lg mb-12 max-w-2xl" data-testid="text-welcome-description">
+          Your AI-powered data analysis companion. Upload a dataset and start exploring through natural conversation.
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl w-full">
-          <Card className="p-6 text-left hover-elevate cursor-pointer transition-all" onClick={() => onAction?.()}>
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-lg bg-chart-1/10">
-                <Upload className="h-6 w-6 text-chart-1" />
-              </div>
-              <div>
-                <h3 className="font-semibold mb-1">Upload Data</h3>
-                <p className="text-sm text-muted-foreground">
-                  Start by uploading your CSV, Excel, JSON, or Parquet file
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 text-left hover-elevate cursor-pointer transition-all" onClick={() => onExampleDataset?.()}>
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-lg bg-chart-2/10">
-                <FileText className="h-6 w-6 text-chart-2" />
-              </div>
-              <div>
-                <h3 className="font-semibold mb-1">Example Datasets</h3>
-                <p className="text-sm text-muted-foreground">
-                  Try with sample data to explore features
-                </p>
-              </div>
-            </div>
-          </Card>
+        <div className="flex flex-col sm:flex-row items-center gap-3 mb-8">
+          <Button 
+            onClick={() => onAction?.()} 
+            size="lg"
+            className="min-w-[160px]"
+            data-testid="button-upload-dataset"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Dataset
+          </Button>
+          <Button 
+            onClick={() => onExampleDataset?.()} 
+            variant="outline"
+            size="lg"
+            className="min-w-[160px]"
+            data-testid="button-try-example"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Try Example
+          </Button>
         </div>
 
-        <div className="mt-8 p-4 bg-muted/50 rounded-lg max-w-md">
-          <p className="text-xs text-muted-foreground mb-2">Try asking:</p>
-          <div className="space-y-1">
-            <p className="text-sm">• "Show me the data quality score"</p>
-            <p className="text-sm">• "Remove outliers from the price column"</p>
-            <p className="text-sm">• "Create a correlation heatmap"</p>
+        <div className="mt-4">
+          <p className="text-xs text-muted-foreground mb-3">Try asking:</p>
+          <div className="flex flex-wrap gap-2 justify-center max-w-xl">
+            <span className="text-sm text-foreground/70 px-3 py-1 rounded-full border border-border/50">
+              Show me the data quality score
+            </span>
+            <span className="text-sm text-foreground/70 px-3 py-1 rounded-full border border-border/50">
+              Remove outliers
+            </span>
+            <span className="text-sm text-foreground/70 px-3 py-1 rounded-full border border-border/50">
+              Create a correlation heatmap
+            </span>
           </div>
         </div>
       </div>

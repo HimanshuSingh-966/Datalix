@@ -15,7 +15,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useChatStore } from '@/lib/store';
 import { generateId } from '@/lib/utils';
-import { Send, Paperclip } from 'lucide-react';
+import { ArrowUp, Paperclip } from 'lucide-react';
+import { AIProviderSelector } from '@/components/AIProviderSelector';
 import { useToast } from '@/hooks/use-toast';
 import type { ChatMessage } from '@shared/schema';
 
@@ -310,49 +311,54 @@ export default function ChatPage() {
       </div>
 
       <div className="border-t border-border bg-background flex justify-center">
-        <div className="w-full max-w-2xl px-4 py-4">
-          <div className="flex items-end gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowUploadDialog(true)}
-              data-testid="button-attach-file"
-            >
-              <Paperclip className="h-5 w-5" />
-            </Button>
+        <div className="w-full max-w-3xl px-4 py-6">
+          <div className="relative">
+            <div className="flex items-end gap-3">
+              <div className="flex-1 relative bg-card border border-border rounded-2xl p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowUploadDialog(true)}
+                    data-testid="button-attach-file"
+                    className="h-7 px-2"
+                  >
+                    <Paperclip className="h-3.5 w-3.5" />
+                  </Button>
+                  <AIProviderSelector className="h-7" />
+                </div>
+                <Textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder="Ask me anything about your data..."
+                  className="resize-none min-h-[44px] max-h-32 border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  rows={1}
+                  disabled={isLoading}
+                  data-testid="input-chat-message"
+                />
+              </div>
 
-            <div className="flex-1 relative">
-              <Textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Type your message... (Shift+Enter for new line)"
-                className="resize-none min-h-[44px] max-h-32 pr-12"
-                rows={1}
-                disabled={isLoading}
-                data-testid="input-chat-message"
-              />
+              <Button
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading}
+                size="icon"
+                className="h-12 w-12 rounded-full shrink-0"
+                data-testid="button-send-message"
+              >
+                <ArrowUp className="h-5 w-5" />
+              </Button>
             </div>
-
-            <Button
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              size="icon"
-              data-testid="button-send-message"
-            >
-              <Send className="h-5 w-5" />
-            </Button>
           </div>
 
-          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground" data-testid="container-examples">
-            <span>Examples:</span>
+          <div className="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground" data-testid="container-examples">
             <button
               className="text-primary hover:underline"
               onClick={() => handleSuggestedAction('Show correlation matrix')}
               data-testid="example-correlation"
             >
-              Show correlation
+              Correlation
             </button>
             <span>•</span>
             <button
@@ -360,15 +366,15 @@ export default function ChatPage() {
               onClick={() => handleSuggestedAction('Export as CSV')}
               data-testid="example-export"
             >
-              Export as CSV
+              Export
             </button>
             <span>•</span>
             <button
               className="text-primary hover:underline"
-              onClick={() => handleSuggestedAction('Create a histogram of age')}
+              onClick={() => handleSuggestedAction('Create a histogram')}
               data-testid="example-histogram"
             >
-              Create histogram
+              Visualize
             </button>
           </div>
         </div>

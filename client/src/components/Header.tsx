@@ -31,61 +31,39 @@ export function Header({ onUploadClick, onNewSession, onSessionHistory, onSettin
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
-      <div className="flex h-16 items-center justify-between px-6">
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur-sm">
+      <div className="flex h-14 items-center justify-between px-6">
         {/* Logo and Title */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-chart-1 flex items-center justify-center" data-testid="logo-icon">
-              <span className="text-lg font-bold text-white">D</span>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold" data-testid="text-app-title">DataLix AI</h1>
-              <p className="text-xs text-muted-foreground" data-testid="text-app-subtitle">AI-Powered Data Analysis</p>
-            </div>
-          </div>
+          <h1 className="text-lg font-semibold" data-testid="text-app-title">DataLix</h1>
 
           {/* Dataset Status */}
-          {datasetLoaded && (
-            <div className="hidden md:flex items-center gap-2 ml-6 pl-6 border-l border-border" data-testid="dataset-status">
-              <span className="text-sm text-muted-foreground" data-testid="text-dataset-loaded">Dataset loaded</span>
-              {qualityScore !== undefined && (
-                <Badge variant={getQualityBadgeVariant(qualityScore)} data-testid="badge-quality-score">
-                  Score: {Math.round(qualityScore)}/100
-                </Badge>
-              )}
+          {datasetLoaded && qualityScore !== undefined && (
+            <div className="hidden md:flex items-center gap-2 ml-6 pl-6 border-l border-border/50" data-testid="dataset-status">
+              <Badge variant={getQualityBadgeVariant(qualityScore)} data-testid="badge-quality-score" className="text-xs">
+                Quality: {Math.round(qualityScore)}
+              </Badge>
             </div>
           )}
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <AIProviderSelector />
-          
           <Button
-            variant="outline"
-            size="sm"
-            onClick={onUploadClick}
-            data-testid="button-header-upload"
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Upload</span>
-          </Button>
-
-          <Button
-            variant="default"
+            variant="ghost"
             size="sm"
             onClick={onNewSession}
             data-testid="button-new-session"
+            className="h-8"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">New Session</span>
+            <Plus className="h-4 w-4 mr-1.5" />
+            <span className="hidden sm:inline text-sm">New</span>
           </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" data-testid="button-user-menu">
-                <User className="h-5 w-5" />
+              <Button variant="ghost" size="icon" data-testid="button-user-menu" className="h-8 w-8">
+                <User className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
