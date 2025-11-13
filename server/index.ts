@@ -48,39 +48,47 @@ process.on('exit', () => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Register Express routes BEFORE proxy (so they take precedence)
-import { registerRoutes } from "./routes";
+// Create HTTP server
 const httpServer = createServer(app);
+
+// Register Express routes FIRST (highest priority)
+import { registerRoutes } from "./routes";
 await registerRoutes(app, httpServer);
 
-// Proxy remaining /api requests to Python backend
-// Express routes are registered first, so this only catches unmatched routes
+// Proxy ALL /api/* requests to Python backend BEFORE Vite
+// This ensures API requests (including auth) don't get caught by Vite's catch-all
 app.use('/api', createProxyMiddleware({
   target: 'http://localhost:8001',
   changeOrigin: true,
-  logLevel: 'debug',
+  logLevel: 'silent',
   pathRewrite: {
-    '^/api': '', // Strip /api prefix when forwarding to Python backend
+    '^/api': '', // Strip /api prefix: /api/auth/signup -> /auth/signup
   },
-  onProxyReq: (proxyReq, req) => {
-    // Forward authorization headers
+  onProxyReq: (proxyReq, req, res) => {
+    const targetPath = req.url.replace('/api', '');
+    console.log(`[Proxy] ${req.method} ${req.url} -> http://localhost:8001${targetPath}`);
     if (req.headers.authorization) {
       proxyReq.setHeader('Authorization', req.headers.authorization);
     }
   },
+  onProxyRes: (proxyRes, req, res) => {
+    console.log(`[Proxy] Response: ${proxyRes.statusCode} for ${req.url}`);
+  },
   onError: (err, req, res) => {
-    console.error('Proxy error:', err);
-    res.writeHead(500, {
-      'Content-Type': 'application/json',
-    });
-    res.end(JSON.stringify({
-      error: 'Backend proxy error',
-      message: err.message
-    }));
+    console.error('[Proxy] Error:', err.message);
+    if (!res.headersSent) {
+      res.writeHead(500, {
+        'Content-Type': 'application/json',
+      });
+      res.end(JSON.stringify({
+        error: 'Backend proxy error',
+        message: err.message
+      }));
+    }
   }
 }));
 
-// Vite dev server setup with proper configuration
+// Vite dev server setup LAST (lowest priority - catches remaining requests)
 await setupVite(app, httpServer);
 
 const PORT = Number(process.env.PORT) || 5000;
