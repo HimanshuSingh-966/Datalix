@@ -34,7 +34,20 @@ def analyze_data_quality(df: pd.DataFrame) -> Dict[str, Any]:
         unique_count = df[col].nunique()
         non_null_values = df[col].dropna()
         
-        sample_values = non_null_values.unique()[:3].tolist() if len(non_null_values) > 0 else []
+        # Get sample values and convert to native Python types
+        if len(non_null_values) > 0:
+            unique_vals = non_null_values.unique()[:3]
+            sample_values = []
+            for val in unique_vals:
+                # Convert numpy types to Python native types
+                if isinstance(val, (np.integer, np.floating)):
+                    sample_values.append(float(val))
+                elif isinstance(val, np.ndarray):
+                    sample_values.append(val.tolist())
+                else:
+                    sample_values.append(str(val))
+        else:
+            sample_values = []
         
         column_metrics.append({
             "column": col,
