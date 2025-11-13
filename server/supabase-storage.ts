@@ -21,22 +21,22 @@ export class SupabaseStorage implements IStorage {
 
   async getUser(id: string): Promise<User | undefined> {
     const result = await this.sql`
-      SELECT * FROM users WHERE id = ${id} LIMIT 1
+      SELECT * FROM profiles WHERE id = ${id} LIMIT 1
     `;
     return result[0] as User | undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     const result = await this.sql`
-      SELECT * FROM users WHERE username = ${username} LIMIT 1
+      SELECT * FROM profiles WHERE username = ${username} LIMIT 1
     `;
     return result[0] as User | undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const result = await this.sql`
-      INSERT INTO users (username, email, password)
-      VALUES (${insertUser.username}, ${insertUser.email}, ${insertUser.password})
+      INSERT INTO profiles (username, email)
+      VALUES (${insertUser.username}, ${insertUser.email})
       RETURNING *
     `;
     return result[0] as User;
@@ -44,7 +44,7 @@ export class SupabaseStorage implements IStorage {
 
   async updateUserMasterStatus(userId: string, isMaster: boolean): Promise<void> {
     await this.sql`
-      UPDATE users 
+      UPDATE profiles 
       SET is_master = ${isMaster ? 1 : 0}
       WHERE id = ${userId}
     `;

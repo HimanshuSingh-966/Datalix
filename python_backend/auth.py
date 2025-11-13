@@ -89,17 +89,9 @@ async def signup(request: SignUpRequest):
             if response.user is None:
                 raise HTTPException(status_code=400, detail="Signup failed - user not created")
             
-            # Create user profile in database
-            try:
-                supabase_admin.table("users").insert({
-                    "id": response.user.id,
-                    "username": request.username,
-                    "email": response.user.email
-                }).execute()
-                print(f"✓ User profile created in database for {response.user.email}")
-            except Exception as db_error:
-                print(f"⚠️  Database profile creation error: {str(db_error)}")
-                # Continue even if profile creation fails - auth user was created
+            # Note: User profile is automatically created in the 'profiles' table
+            # via database trigger (handle_new_user) when auth.users entry is created
+            print(f"✓ User created via Supabase Auth: {response.user.email}")
             
             # Check if session exists (it might be None if email confirmation is required)
             if response.session is None:
@@ -274,10 +266,10 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> Dict:
             
             username = user_response.user.user_metadata.get('username', user_response.user.email.split('@')[0] if user_response.user.email else 'user')
             
-            # Fetch is_master from database
+            # Fetch is_master from database (profiles table)
             is_master = 0
             try:
-                user_data = supabase_admin.table("users").select("is_master").eq("id", user_response.user.id).single().execute()
+                user_data = supabase_admin.table("profiles").select("is_master").eq("id", user_response.user.id).single().execute()
                 if user_data.data:
                     is_master = user_data.data.get("is_master", 0)
             except Exception as e:
