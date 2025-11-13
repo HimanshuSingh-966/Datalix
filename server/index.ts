@@ -44,49 +44,45 @@ process.on('exit', () => {
   }
 });
 
-// Register Express middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
 // Create HTTP server
 const httpServer = createServer(app);
 
-// Register Express routes FIRST (highest priority)
-import { registerRoutes } from "./routes";
-await registerRoutes(app, httpServer);
-
-// Proxy ALL /api/* requests to Python backend BEFORE Vite
-// This ensures API requests (including auth) don't get caught by Vite's catch-all
+// Proxy ALL /api/* requests to Python backend BEFORE any other middleware
+// This is critical - proxy must run before body parsers
 app.use('/api', createProxyMiddleware({
   target: 'http://localhost:8001',
   changeOrigin: true,
-  logLevel: 'silent',
-  pathRewrite: {
-    '^/api': '', // Strip /api prefix: /api/auth/signup -> /auth/signup
+  pathRewrite: (path) => {
+    // /api/auth/signup -> /auth/signup
+    // /api/upload -> /upload
+    const newPath = path.replace(/^\/api/, '');
+    console.log(`[Proxy] Rewrite: ${path} -> ${newPath}`);
+    return newPath;
   },
-  onProxyReq: (proxyReq, req, res) => {
-    const targetPath = req.url.replace('/api', '');
-    console.log(`[Proxy] ${req.method} ${req.url} -> http://localhost:8001${targetPath}`);
-    if (req.headers.authorization) {
-      proxyReq.setHeader('Authorization', req.headers.authorization);
-    }
+  onProxyReq: (proxyReq, req) => {
+    console.log(`[Proxy] Request: ${req.method} ${req.url}`);
   },
-  onProxyRes: (proxyRes, req, res) => {
+  onProxyRes: (proxyRes, req) => {
     console.log(`[Proxy] Response: ${proxyRes.statusCode} for ${req.url}`);
   },
   onError: (err, req, res) => {
     console.error('[Proxy] Error:', err.message);
     if (!res.headersSent) {
-      res.writeHead(500, {
-        'Content-Type': 'application/json',
-      });
-      res.end(JSON.stringify({
-        error: 'Backend proxy error',
+      res.status(502).json({
+        error: 'Backend service unavailable',
         message: err.message
-      }));
+      });
     }
   }
 }));
+
+// Register Express middleware (AFTER proxy)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Register Express routes for session management
+import { registerRoutes } from "./routes";
+await registerRoutes(app, httpServer);
 
 // Vite dev server setup LAST (lowest priority - catches remaining requests)
 await setupVite(app, httpServer);
