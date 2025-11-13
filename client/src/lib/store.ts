@@ -10,6 +10,7 @@ interface ChatStore {
   aiProvider: 'auto' | 'groq' | 'gemini';
   
   setSessionId: (id: string) => void;
+  setMessages: (messages: ChatMessage[]) => void;
   addMessage: (message: ChatMessage) => void;
   updateMessage: (id: string, updates: Partial<ChatMessage>) => void;
   deleteMessage: (id: string) => void;
@@ -29,6 +30,8 @@ export const useChatStore = create<ChatStore>((set) => ({
   aiProvider: 'auto',
   
   setSessionId: (id) => set({ sessionId: id }),
+  
+  setMessages: (messages) => set({ messages }),
   
   addMessage: (message) => set((state) => ({
     messages: [...state.messages, message]

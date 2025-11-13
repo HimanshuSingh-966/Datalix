@@ -44,7 +44,17 @@ process.on('exit', () => {
   }
 });
 
-// Proxy /api requests to Python backend using http-proxy-middleware
+// Register Express middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Register Express routes BEFORE proxy (so they take precedence)
+import { registerRoutes } from "./routes";
+const httpServer = createServer(app);
+await registerRoutes(app, httpServer);
+
+// Proxy remaining /api requests to Python backend
+// Express routes are registered first, so this only catches unmatched routes
 app.use('/api', createProxyMiddleware({
   target: 'http://localhost:8001',
   changeOrigin: true,
@@ -68,7 +78,6 @@ app.use('/api', createProxyMiddleware({
 }));
 
 // Vite dev server setup with proper configuration
-const httpServer = createServer(app);
 await setupVite(app, httpServer);
 
 const PORT = Number(process.env.PORT) || 5000;

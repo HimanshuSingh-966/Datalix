@@ -231,6 +231,11 @@ async def signin(request: SignInRequest):
             "access_token": access_token
         }
 
+@router.get("/verify")
+async def verify_token(user: Dict = Depends(get_current_user)):
+    """Verify authentication token and return user info"""
+    return user
+
 @router.post("/signout")
 async def signout(authorization: Optional[str] = Header(None)):
     """Sign out a user"""

@@ -31,16 +31,19 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserMasterStatus(userId: string, isMaster: boolean): Promise<void>;
   
   // Session management
   createSession(session: InsertSession): Promise<Session>;
   getSession(id: string): Promise<Session | undefined>;
   getUserSessions(userId: string): Promise<Session[]>;
   deleteSession(id: string): Promise<void>;
+  updateSessionName(sessionId: string, name: string): Promise<void>;
   
   // Message management
   createMessage(message: InsertMessage): Promise<Message>;
   getSessionMessages(sessionId: string): Promise<Message[]>;
+  getUserMessageCountToday(userId: string): Promise<number>;
   
   // Dataset storage
   storeDataset(sessionId: string, data: any, preview: DataPreview, quality: DataQuality, metadata: any): Promise<void>;
@@ -75,9 +78,17 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const createdAt = new Date();
-    const user: User = { ...insertUser, id, createdAt };
+    const user: User = { ...insertUser, id, isMaster: 0, createdAt };
     this.users.set(id, user);
     return user;
+  }
+
+  async updateUserMasterStatus(userId: string, isMaster: boolean): Promise<void> {
+    const user = this.users.get(userId);
+    if (user) {
+      user.isMaster = isMaster ? 1 : 0;
+      this.users.set(userId, user);
+    }
   }
 
   // Session management
@@ -111,6 +122,15 @@ export class MemStorage implements IStorage {
     this.datasets.delete(id);
   }
 
+  async updateSessionName(sessionId: string, name: string): Promise<void> {
+    const session = this.sessions.get(sessionId);
+    if (session) {
+      session.name = name;
+      session.updatedAt = new Date();
+      this.sessions.set(sessionId, session);
+    }
+  }
+
   // Message management
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
     const id = randomUUID();
@@ -121,11 +141,35 @@ export class MemStorage implements IStorage {
     sessionMessages.push(message);
     this.messages.set(insertMessage.sessionId, sessionMessages);
     
+    const session = this.sessions.get(insertMessage.sessionId);
+    if (session) {
+      session.updatedAt = createdAt;
+      this.sessions.set(insertMessage.sessionId, session);
+    }
+    
     return message;
   }
 
   async getSessionMessages(sessionId: string): Promise<Message[]> {
     return this.messages.get(sessionId) || [];
+  }
+
+  async getUserMessageCountToday(userId: string): Promise<number> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    let count = 0;
+    const userSessions = await this.getUserSessions(userId);
+    
+    for (const session of userSessions) {
+      const messages = this.messages.get(session.id) || [];
+      const todayMessages = messages.filter(msg => 
+        msg.role === 'user' && msg.createdAt >= today
+      );
+      count += todayMessages.length;
+    }
+    
+    return count;
   }
 
   // Dataset storage

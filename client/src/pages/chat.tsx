@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { queryClient, apiRequest } from '@/lib/queryClient';
 import { Header } from '@/components/Header';
+import { SessionSidebar } from '@/components/SessionSidebar';
 import { MessageBubble } from '@/components/MessageBubble';
 import { DataPreview } from '@/components/DataPreview';
 import { ChartDisplay } from '@/components/ChartDisplay';
@@ -13,12 +16,13 @@ import { SettingsDialog } from '@/components/SettingsDialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useChatStore } from '@/lib/store';
 import { generateId } from '@/lib/utils';
 import { ArrowUp, Paperclip } from 'lucide-react';
 import { AIProviderSelector } from '@/components/AIProviderSelector';
 import { useToast } from '@/hooks/use-toast';
-import type { ChatMessage } from '@shared/schema';
+import type { ChatMessage, Session, Message } from '@shared/schema';
 
 export default function ChatPage() {
   const {
@@ -68,6 +72,9 @@ export default function ChatPage() {
       timestamp: new Date(),
     };
 
+    const messageContent = input;
+    const isFirstMessage = messages.length === 0;
+    
     addMessage(userMessage);
     setInput('');
     setIsLoading(true);
@@ -81,13 +88,20 @@ export default function ChatPage() {
         },
         body: JSON.stringify({
           session_id: sessionId,
-          message: input,
+          message: messageContent,
           provider: aiProvider
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to process message');
+        const errorData = await response.json().catch(() => ({ error: 'Failed to process message' }));
+        if (response.status === 429) {
+          toast({ 
+            description: errorData.error || 'Daily message limit reached (10/10). Limit resets at midnight.',
+            variant: 'destructive' 
+          });
+        }
+        throw new Error(errorData.error || 'Failed to process message');
       }
 
       const data = await response.json();
@@ -105,9 +119,14 @@ export default function ChatPage() {
 
       addMessage(assistantMessage);
 
-      // Update dataset if there's a new preview
       if (data.data_preview) {
         setCurrentDataset(data.data_preview);
+      }
+
+      if (isFirstMessage) {
+        const sessionName = messageContent.substring(0, 50);
+        await apiRequest('PATCH', `/api/sessions/${sessionId}/name`, { name: sessionName });
+        queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
       }
     } catch (error) {
       const errorMessage: ChatMessage = {
@@ -192,12 +211,63 @@ export default function ChatPage() {
     textareaRef.current?.focus();
   };
 
-  const handleNewSession = () => {
-    if (messages.length > 0) {
-      if (confirm('Start a new session? This will clear the current conversation.')) {
-        clearSession();
-        toast({ description: 'New session started' });
+  const handleNewSession = async () => {
+    try {
+      const response = await apiRequest('POST', '/api/sessions', {});
+      const data = await response.json();
+      
+      clearSession();
+      useChatStore.setState({ sessionId: data.id });
+      queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
+      toast({ description: 'New session created' });
+    } catch (error) {
+      toast({ 
+        description: 'Failed to create session', 
+        variant: 'destructive' 
+      });
+    }
+  };
+
+  const handleSessionSelect = async (sessionId: string) => {
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}/messages`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load session');
       }
+
+      const sessionMessages = await response.json() as Message[];
+      
+      const chatMessages: ChatMessage[] = sessionMessages.map(msg => ({
+        id: msg.id,
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+        timestamp: new Date(msg.createdAt),
+        chartData: msg.chartData || undefined,
+        dataPreview: msg.dataPreview || undefined,
+        suggestedActions: msg.suggestedActions || undefined,
+        functionCalls: msg.functionCalls || undefined,
+        error: !!msg.error,
+      }));
+
+      clearSession();
+      useChatStore.setState({ 
+        sessionId: sessionId
+      });
+      useChatStore.getState().setMessages(chatMessages);
+      
+      if (sessionMessages.length > 0 && sessionMessages[0].dataPreview) {
+        setCurrentDataset(sessionMessages[0].dataPreview);
+      }
+    } catch (error) {
+      toast({ 
+        description: 'Failed to load session', 
+        variant: 'destructive' 
+      });
     }
   };
 
@@ -242,15 +312,27 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      <Header
-        onUploadClick={() => setShowUploadDialog(true)}
+    <div className="flex h-screen w-full bg-background">
+      <SessionSidebar
+        currentSessionId={sessionId}
+        onSessionSelect={handleSessionSelect}
         onNewSession={handleNewSession}
-        onSessionHistory={handleSessionHistory}
-        onSettings={handleSettings}
-        datasetLoaded={!!currentDataset}
-        qualityScore={qualityScore?.overallScore}
       />
+      
+      <div className="flex flex-col flex-1 h-screen">
+        <header className="flex items-center gap-2 p-2 border-b">
+          <SidebarTrigger data-testid="button-sidebar-toggle" />
+          <div className="flex-1">
+            <Header
+              onUploadClick={() => setShowUploadDialog(true)}
+              onNewSession={handleNewSession}
+              onSessionHistory={handleSessionHistory}
+              onSettings={handleSettings}
+              datasetLoaded={!!currentDataset}
+              qualityScore={qualityScore?.overallScore}
+            />
+          </div>
+        </header>
 
       <div className="flex-1 overflow-y-auto flex justify-center">
         <div className="w-full max-w-2xl px-4 py-6">
@@ -399,6 +481,7 @@ export default function ChatPage() {
         open={showSettingsDialog}
         onOpenChange={setShowSettingsDialog}
       />
+      </div>
     </div>
   );
 }
