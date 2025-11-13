@@ -1,5 +1,8 @@
--- DataLix 2.0 Database Schema
--- PostgreSQL Database Schema for AI-Powered Data Analysis Platform
+-- DataLix 2.0 - Complete Database Schema
+-- PostgreSQL Database Initialization Script
+-- 
+-- This script creates all necessary tables, indexes, triggers, and functions
+-- for the AI-Powered Data Analysis Platform with master user support
 
 -- =============================================================================
 -- TABLE: users
@@ -11,18 +14,22 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT NOT NULL UNIQUE,
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,  -- Bcrypt hashed password (never plain text)
+    is_master INTEGER NOT NULL DEFAULT 0,  -- Flag for master users (1 = master, 0 = regular)
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- Indexes for users table
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_is_master ON users(is_master);
 
+-- Comments for users table
 COMMENT ON TABLE users IS 'User authentication and profile information';
 COMMENT ON COLUMN users.id IS 'Unique user identifier (UUID)';
 COMMENT ON COLUMN users.username IS 'Unique username for login';
 COMMENT ON COLUMN users.email IS 'Unique email address';
 COMMENT ON COLUMN users.password IS 'Bcrypt hashed password';
+COMMENT ON COLUMN users.is_master IS 'Flag indicating if user has unlimited message quota (1 = master, 0 = regular user)';
 COMMENT ON COLUMN users.created_at IS 'Account creation timestamp';
 
 -- =============================================================================
@@ -42,6 +49,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_updated_at ON sessions(updated_at DESC);
 
+-- Comments for sessions table
 COMMENT ON TABLE sessions IS 'Data analysis sessions containing datasets and chat history';
 COMMENT ON COLUMN sessions.id IS 'Unique session identifier (UUID)';
 COMMENT ON COLUMN sessions.user_id IS 'Owner of the session (foreign key to users)';
@@ -49,7 +57,7 @@ COMMENT ON COLUMN sessions.name IS 'Optional session name/title';
 COMMENT ON COLUMN sessions.created_at IS 'Session creation timestamp';
 COMMENT ON COLUMN sessions.updated_at IS 'Last update timestamp (auto-updated)';
 
--- Trigger to automatically update updated_at timestamp
+-- Trigger function to automatically update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_sessions_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -58,6 +66,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Trigger to execute the function on sessions update
 DROP TRIGGER IF EXISTS sessions_updated_at_trigger ON sessions;
 CREATE TRIGGER sessions_updated_at_trigger
     BEFORE UPDATE ON sessions
@@ -91,6 +100,7 @@ CREATE INDEX IF NOT EXISTS idx_messages_role ON messages(role);
 CREATE INDEX IF NOT EXISTS idx_messages_chart_data ON messages USING GIN (chart_data);
 CREATE INDEX IF NOT EXISTS idx_messages_data_preview ON messages USING GIN (data_preview);
 
+-- Comments for messages table
 COMMENT ON TABLE messages IS 'Chat messages and AI analysis results';
 COMMENT ON COLUMN messages.id IS 'Unique message identifier (UUID)';
 COMMENT ON COLUMN messages.session_id IS 'Parent session (foreign key to sessions)';
@@ -104,18 +114,14 @@ COMMENT ON COLUMN messages.error IS 'Error message if processing failed';
 COMMENT ON COLUMN messages.created_at IS 'Message timestamp';
 
 -- =============================================================================
--- SAMPLE DATA (Optional - for testing)
+-- MASTER USER SETUP
 -- =============================================================================
 
--- Uncomment to insert sample data for testing:
+-- To set a user as master (unlimited message quota), run:
+-- UPDATE users SET is_master = 1 WHERE email = 'your-email@example.com';
 
--- INSERT INTO users (username, email, password) VALUES
--- ('demo_user', 'demo@example.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5PJ8XgxE0LJ3e');
--- -- Password is: 'password123' (hashed with bcrypt)
-
--- INSERT INTO sessions (user_id, name) VALUES
--- ((SELECT id FROM users WHERE username = 'demo_user'), 'Sales Analysis Session'),
--- ((SELECT id FROM users WHERE username = 'demo_user'), 'Customer Data Exploration');
+-- To verify master user status:
+-- SELECT id, email, username, is_master FROM users WHERE is_master = 1;
 
 -- =============================================================================
 -- USEFUL QUERIES
@@ -153,6 +159,11 @@ COMMENT ON COLUMN messages.created_at IS 'Message timestamp';
 -- INNER JOIN messages m ON m.session_id = s.id
 -- WHERE m.error IS NOT NULL
 -- ORDER BY s.updated_at DESC;
+
+-- Get all master users:
+-- SELECT id, email, username, created_at
+-- FROM users
+-- WHERE is_master = 1;
 
 -- =============================================================================
 -- CLEANUP QUERIES (USE WITH CAUTION)
