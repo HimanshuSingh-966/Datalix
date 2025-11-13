@@ -55,9 +55,24 @@ def calculate_correlation(df: pd.DataFrame, columns: Optional[List[str]] = None)
     # Calculate correlation matrix
     corr_df = df[numeric_cols].corr()
     
+    # Convert to list and handle NaN values
+    matrix_values = corr_df.values.tolist()
+    # Replace any NaN with None for JSON serialization
+    clean_matrix = []
+    for row in matrix_values:
+        clean_row = []
+        for val in row:
+            if isinstance(val, (np.floating, float)) and np.isnan(val):
+                clean_row.append(None)
+            elif isinstance(val, (np.integer, np.floating)):
+                clean_row.append(float(val))
+            else:
+                clean_row.append(val)
+        clean_matrix.append(clean_row)
+    
     return {
         "columns": numeric_cols,
-        "matrix": corr_df.values.tolist()
+        "matrix": clean_matrix
     }
 
 def describe_distribution(df: pd.DataFrame, column: str) -> Dict[str, Any]:
