@@ -1,0 +1,44 @@
+I'll help you create a prompt to transform the DataLix interface to match the design style of the second image. Here's a comprehensive prompt:
+
+---
+
+**Prompt for Redesigning DataLix Chat Interface:**
+
+Transform the DataLix AI chat interface from the current light, modern design to a sophisticated dark theme matching the second reference image. Here are the specific requirements:
+
+**Color Scheme:**
+- Background: Deep charcoal/dark gray (#2b2b2b or similar)
+- Text: Light gray/off-white for primary content
+- Accent color: Warm coral/orange (#ff7b54 or similar) for buttons and highlights
+- Secondary text: Medium gray for subtle elements
+
+**Layout & Structure:**
+- Center the main content area with a clean, minimalist approach
+- Replace the current welcome card layout with a single, focused chat input area
+- Remove the separate "Upload Data" and "Example Datasets" card boxes
+- Create a streamlined message input area at the center of the screen
+
+**Chat Interface Elements:**
+- Message input: Dark gray box with rounded corners, matching the dark theme
+- Input placeholder: Light gray text
+- Action buttons: Small icon buttons (+, -, refresh) positioned above or beside the input
+- Send button: Coral/orange circular button with an up arrow icon
+- Model selector: Dropdown showing "Sonnet 4.5" (or current model) in the top-right of the input area
+
+**Typography:**
+- Use a serif font for the greeting (similar to the elegant style in image 2)
+- Keep body text clean and readable with a sans-serif font
+- Maintain good contrast for accessibility
+
+**Interactive Elements:**
+- File attachments should be displayed as small thumbnail previews below the input
+- Hover states with subtle transitions
+- Smooth animations for message sending
+
+**Overall Aesthetic:**
+- Sophisticated, minimal, elegant
+- Focus on the conversation interface
+- Remove unnecessary UI chrome and decorative elements
+- Create a more immersive, distraction-free chat experience
+
+Would you like me to create a React component that implements this redesigned interface?
