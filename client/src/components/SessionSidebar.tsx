@@ -61,9 +61,7 @@ export function SessionSidebar({ currentSessionId, onSessionSelect, onNewSession
 
   const deleteMutation = useMutation({
     mutationFn: async (sessionId: string) => {
-      await apiRequest(`/api/sessions/${sessionId}`, {
-        method: 'DELETE',
-      });
+      await apiRequest('DELETE', `/api/sessions/${sessionId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
@@ -89,10 +87,10 @@ export function SessionSidebar({ currentSessionId, onSessionSelect, onNewSession
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (date: Date | string) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
     const now = new Date();
-    const diffInMs = now.getTime() - date.getTime();
+    const diffInMs = now.getTime() - dateObj.getTime();
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
     if (diffInDays === 0) {
@@ -102,7 +100,7 @@ export function SessionSidebar({ currentSessionId, onSessionSelect, onNewSession
     } else if (diffInDays < 7) {
       return `${diffInDays} days ago`;
     } else {
-      return date.toLocaleDateString();
+      return dateObj.toLocaleDateString();
     }
   };
 

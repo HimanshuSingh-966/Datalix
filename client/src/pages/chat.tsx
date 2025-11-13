@@ -247,10 +247,10 @@ export default function ChatPage() {
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
         timestamp: new Date(msg.createdAt),
-        chartData: msg.chartData || undefined,
-        dataPreview: msg.dataPreview || undefined,
-        suggestedActions: msg.suggestedActions || undefined,
-        functionCalls: msg.functionCalls || undefined,
+        chartData: msg.chartData as any || undefined,
+        dataPreview: msg.dataPreview as any || undefined,
+        suggestedActions: msg.suggestedActions as any || undefined,
+        functionCalls: msg.functionCalls as any || undefined,
         error: !!msg.error,
       }));
 
@@ -261,7 +261,7 @@ export default function ChatPage() {
       useChatStore.getState().setMessages(chatMessages);
       
       if (sessionMessages.length > 0 && sessionMessages[0].dataPreview) {
-        setCurrentDataset(sessionMessages[0].dataPreview);
+        setCurrentDataset(sessionMessages[0].dataPreview as any);
       }
     } catch (error) {
       toast({ 

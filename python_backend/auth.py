@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Depends
 from pydantic import BaseModel, EmailStr
 from typing import Optional, Dict
 import os
@@ -231,6 +231,73 @@ async def signin(request: SignInRequest):
             "access_token": access_token
         }
 
+async def get_current_user(authorization: Optional[str] = Header(None)) -> Dict:
+    """Dependency to get current authenticated user"""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    token = authorization.split(" ")[1]
+    
+    # First, check if this is a temporary token in our sessions database
+    if token in sessions_db:
+        user_key = sessions_db[token]
+        
+        # Check if this is a Supabase user (prefixed with 'supabase:')
+        if user_key.startswith("supabase:") and user_key in users_db:
+            user = users_db[user_key]
+            return {
+                "id": user["id"],
+                "email": user["email"],
+                "username": user["username"],
+                "isMaster": user.get("isMaster", 0)
+            }
+        
+        # Otherwise it's an in-memory auth user
+        user = next((u for u in users_db.values() if u["id"] == user_key), None)
+        
+        if user:
+            return {
+                "id": user["id"],
+                "email": user["email"],
+                "username": user["username"],
+                "isMaster": user.get("isMaster", 0)
+            }
+    
+    # If not a temporary token and using Supabase, validate as JWT token
+    if USE_SUPABASE and supabase_admin:
+        try:
+            # Use the admin client to verify the user token
+            user_response = supabase_admin.auth.get_user(token)
+            
+            if not user_response or not user_response.user:
+                raise HTTPException(status_code=401, detail="Invalid token")
+            
+            username = user_response.user.user_metadata.get('username', user_response.user.email.split('@')[0] if user_response.user.email else 'user')
+            
+            # Fetch is_master from database
+            is_master = 0
+            try:
+                user_data = supabase_admin.table("users").select("is_master").eq("id", user_response.user.id).single().execute()
+                if user_data.data:
+                    is_master = user_data.data.get("is_master", 0)
+            except Exception as e:
+                print(f"⚠️  Could not fetch is_master: {e}")
+            
+            return {
+                "id": user_response.user.id,
+                "email": user_response.user.email,
+                "username": username,
+                "isMaster": is_master
+            }
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"❌ Auth error: {str(e)}")
+            raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
+    
+    # If we get here, token is invalid
+    raise HTTPException(status_code=401, detail="Invalid token")
+
 @router.get("/verify")
 async def verify_token(user: Dict = Depends(get_current_user)):
     """Verify authentication token and return user info"""
@@ -255,61 +322,3 @@ async def signout(authorization: Optional[str] = Header(None)):
                 del sessions_db[token]
         return {"message": "Signed out successfully"}
 
-async def get_current_user(authorization: Optional[str] = Header(None)) -> Dict:
-    """Dependency to get current authenticated user"""
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    
-    token = authorization.split(" ")[1]
-    
-    # First, check if this is a temporary token in our sessions database
-    # This handles both in-memory auth and Supabase users awaiting email confirmation
-    if token in sessions_db:
-        user_key = sessions_db[token]
-        
-        # Check if this is a Supabase user (prefixed with 'supabase:')
-        if user_key.startswith("supabase:") and user_key in users_db:
-            user = users_db[user_key]
-            return {
-                "id": user["id"],
-                "email": user["email"],
-                "username": user["username"]
-            }
-        
-        # Otherwise it's an in-memory auth user
-        user = next((u for u in users_db.values() if u["id"] == user_key), None)
-        
-        if user:
-            return {
-                "id": user["id"],
-                "email": user["email"],
-                "username": user["username"]
-            }
-    
-    # If not a temporary token and using Supabase, validate as JWT token
-    if USE_SUPABASE and supabase_admin:
-        try:
-            # Use the admin client to verify the user token
-            user_response = supabase_admin.auth.get_user(token)
-            
-            if not user_response or not user_response.user:
-                print(f"❌ Token validation failed - no user found")
-                raise HTTPException(status_code=401, detail="Invalid token")
-            
-            username = user_response.user.user_metadata.get('username', user_response.user.email.split('@')[0] if user_response.user.email else 'user')
-            
-            print(f"✓ User authenticated: {user_response.user.email}")
-            
-            return {
-                "id": user_response.user.id,
-                "email": user_response.user.email,
-                "username": username
-            }
-        except HTTPException:
-            raise
-        except Exception as e:
-            print(f"❌ Auth error: {str(e)}")
-            raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
-    
-    # If we get here, token is invalid
-    raise HTTPException(status_code=401, detail="Invalid token")

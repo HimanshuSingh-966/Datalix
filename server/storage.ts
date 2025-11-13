@@ -96,7 +96,8 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const now = new Date();
     const session: Session = { 
-      ...insertSession, 
+      ...insertSession,
+      name: insertSession.name ?? null,
       id, 
       createdAt: now,
       updatedAt: now,
@@ -135,7 +136,16 @@ export class MemStorage implements IStorage {
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
     const id = randomUUID();
     const createdAt = new Date();
-    const message: Message = { ...insertMessage, id, createdAt };
+    const message: Message = { 
+      ...insertMessage,
+      chartData: insertMessage.chartData ?? null,
+      dataPreview: insertMessage.dataPreview ?? null,
+      suggestedActions: insertMessage.suggestedActions ?? null,
+      functionCalls: insertMessage.functionCalls ?? null,
+      error: insertMessage.error ?? null,
+      id, 
+      createdAt 
+    };
     
     const sessionMessages = this.messages.get(insertMessage.sessionId) || [];
     sessionMessages.push(message);
@@ -207,4 +217,17 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import { SupabaseStorage } from './supabase-storage';
+import { DATABASE_URL } from './db';
+
+const USE_SUPABASE = !!DATABASE_URL;
+
+export const storage: IStorage = USE_SUPABASE 
+  ? new SupabaseStorage(DATABASE_URL!) 
+  : new MemStorage();
+
+if (USE_SUPABASE) {
+  console.log('✓ Using Supabase database for session management');
+} else {
+  console.log('⚠️  Using in-memory storage for session management');
+}
