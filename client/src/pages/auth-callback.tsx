@@ -13,7 +13,7 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        const supabase = await getSupabase();
+        const supabase = getSupabase();
         const { data, error } = await supabase.auth.getSession();
 
         if (error) {

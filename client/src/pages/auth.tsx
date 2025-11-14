@@ -105,7 +105,7 @@ export default function AuthPage() {
     setIsGoogleLoading(true);
     try {
       const { getSupabase } = await import('@/lib/supabase');
-      const supabase = await getSupabase();
+      const supabase = getSupabase();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {

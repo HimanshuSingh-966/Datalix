@@ -48,7 +48,7 @@ function App() {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const supabase = await getSupabase();
+        const supabase = getSupabase();
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {

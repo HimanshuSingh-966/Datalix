@@ -1,37 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
-let supabase: ReturnType<typeof createClient> | null = null;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-async function initSupabase() {
-  if (supabase) return supabase;
-
-  try {
-    const response = await fetch('/api/auth/config');
-    const { supabaseUrl, supabaseAnonKey } = await response.json();
-    
-    if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error('Supabase configuration not available');
-    }
-
-    supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-      },
-    });
-
-    return supabase;
-  } catch (error) {
-    console.error('Failed to initialize Supabase:', error);
-    throw error;
-  }
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your Replit Secrets.');
 }
 
-export { initSupabase };
-export const getSupabase = async () => {
-  if (!supabase) {
-    await initSupabase();
-  }
-  return supabase!;
-};
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+});
+
+export const getSupabase = () => supabase;
