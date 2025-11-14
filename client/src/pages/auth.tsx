@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/lib/store';
 import { Sparkles, Loader2 } from 'lucide-react';
+import { FcGoogle } from 'react-icons/fc';
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
@@ -17,6 +18,7 @@ export default function AuthPage() {
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [signupForm, setSignupForm] = useState({ username: '', email: '', password: '', confirmPassword: '' });
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,6 +101,30 @@ export default function AuthPage() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    try {
+      const { getSupabase } = await import('@/lib/supabase');
+      const supabase = await getSupabase();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      toast({
+        description: error instanceof Error ? error.message : 'Failed to initiate Google sign-in',
+        variant: 'destructive'
+      });
+      setIsGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-6">
       <div className="w-full max-w-md mx-auto">
@@ -113,6 +139,37 @@ export default function AuthPage() {
         </div>
 
         <Card className="p-6">
+          <Button
+            variant="outline"
+            className="w-full mb-4"
+            onClick={handleGoogleSignIn}
+            disabled={isGoogleLoading || isLoading}
+            data-testid="button-google-signin"
+          >
+            {isGoogleLoading ? (
+              <>
+                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                Connecting to Google...
+              </>
+            ) : (
+              <>
+                <FcGoogle className="h-5 w-5 mr-2" />
+                Continue with Google
+              </>
+            )}
+          </Button>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">
+                Or continue with email
+              </span>
+            </div>
+          </div>
+
           <Tabs defaultValue="login">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="login">Login</TabsTrigger>

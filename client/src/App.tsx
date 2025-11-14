@@ -5,8 +5,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useAuthStore } from "@/lib/store";
+import { getSupabase } from "@/lib/supabase";
+import { useEffect } from "react";
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import ChatPage from "@/pages/chat";
 import AuthPage from "@/pages/auth";
+import AuthCallback from "@/pages/auth-callback";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ component: Component }: { component: () => JSX.Element }) {
@@ -24,6 +28,9 @@ function Router() {
 
   return (
     <Switch>
+      <Route path="/auth/callback">
+        <AuthCallback />
+      </Route>
       <Route path="/auth">
         {isAuthenticated ? <Redirect to="/" /> : <AuthPage />}
       </Route>
@@ -36,6 +43,60 @@ function Router() {
 }
 
 function App() {
+  const { setUser, setToken, logout } = useAuthStore();
+
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const supabase = await getSupabase();
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          const username = session.user.user_metadata?.username || 
+                          session.user.email?.split('@')[0] || 
+                          'user';
+
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            username: username,
+          });
+          setToken(session.access_token);
+          localStorage.setItem('access_token', session.access_token);
+        }
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          (event: AuthChangeEvent, session: Session | null) => {
+            if (event === 'SIGNED_IN' && session) {
+              const username = session.user.user_metadata?.username || 
+                              session.user.email?.split('@')[0] || 
+                              'user';
+
+              setUser({
+                id: session.user.id,
+                email: session.user.email || '',
+                username: username,
+              });
+              setToken(session.access_token);
+              localStorage.setItem('access_token', session.access_token);
+            } else if (event === 'SIGNED_OUT') {
+              logout();
+              localStorage.removeItem('access_token');
+            }
+          }
+        );
+
+        return () => {
+          subscription.unsubscribe();
+        };
+      } catch (error) {
+        console.error('Failed to initialize auth:', error);
+      }
+    };
+
+    initAuth();
+  }, [setUser, setToken, logout]);
+
   const style = {
     "--sidebar-width": "20rem",
     "--sidebar-width-icon": "4rem",

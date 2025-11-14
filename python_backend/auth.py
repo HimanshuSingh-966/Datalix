@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Header, Depends
+from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel, EmailStr
 from typing import Optional, Dict
 import os
@@ -322,4 +323,12 @@ async def signout(authorization: Optional[str] = Header(None)):
             if token in sessions_db:
                 del sessions_db[token]
         return {"message": "Signed out successfully"}
+
+@router.get("/config")
+async def get_supabase_config():
+    """Return public Supabase configuration for frontend"""
+    return {
+        "supabaseUrl": supabase_url,
+        "supabaseAnonKey": supabase_key
+    }
 
