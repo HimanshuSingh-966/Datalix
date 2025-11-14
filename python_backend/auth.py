@@ -76,6 +76,7 @@ async def signup(request: SignUpRequest):
     if USE_SUPABASE and supabase:
         try:
             # Create user in Supabase Auth
+            # Note: Email confirmation is required by default in Supabase settings
             response = supabase.auth.sign_up({
                 "email": request.email,
                 "password": request.password,
@@ -196,7 +197,15 @@ async def signin(request: SignInRequest):
                 },
                 "access_token": response.session.access_token
             }
+        except HTTPException:
+            raise
         except Exception as e:
+            error_msg = str(e).lower()
+            if "email not confirmed" in error_msg or "email_not_confirmed" in error_msg:
+                raise HTTPException(
+                    status_code=401, 
+                    detail="Email not confirmed. Please check your email inbox and click the confirmation link before signing in."
+                )
             raise HTTPException(status_code=401, detail=str(e))
     else:
         # In-memory auth
