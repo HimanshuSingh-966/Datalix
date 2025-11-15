@@ -49,6 +49,12 @@ function App() {
     const initAuth = async () => {
       try {
         const supabase = getSupabase();
+        
+        if (!supabase) {
+          console.log('Using in-memory authentication - Supabase not configured');
+          return;
+        }
+        
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
