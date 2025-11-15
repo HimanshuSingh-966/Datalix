@@ -1,0 +1,37 @@
+# DataLix AI - Python Backend Dependencies
+# Version: 3.0.0
+# 
+# Installation:
+# pip install -r requirements-production.txt
+#
+# This file contains all Python dependencies needed for production deployment
+
+# Web Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Data Processing
+pandas==2.1.4
+numpy==1.26.3
+openpyxl==3.1.2
+pyarrow==14.0.2
+
+# Data Visualization
+plotly==5.18.0
+
+# Machine Learning
+scikit-learn==1.4.0
+
+# Database & Authentication
+supabase==2.9.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+email-validator==2.3.0
+
+# AI Providers
+google-generativeai==0.3.2
+groq==0.4.1
+
+# Utilities
+python-dotenv==1.0.0
