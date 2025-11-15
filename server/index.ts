@@ -92,8 +92,13 @@ app.use(express.urlencoded({ extended: true }));
 import { registerRoutes } from "./routes";
 await registerRoutes(app, httpServer);
 
-// Vite dev server setup LAST (lowest priority - catches remaining requests)
-await setupVite(app, httpServer);
+// In production, serve static files. In development, use Vite dev server
+if (process.env.NODE_ENV === 'production') {
+  const { serveStatic } = await import("./vite");
+  serveStatic(app);
+} else {
+  await setupVite(app, httpServer);
+}
 
 const PORT = Number(process.env.PORT) || 5000;
 httpServer.listen(PORT, "0.0.0.0", () => {
