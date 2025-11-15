@@ -64,8 +64,8 @@
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/datalix-ai.git
-   cd datalix-ai
+   git clone https://github.com/HimanshuSingh-966/DataLix-AI.git
+   cd DataLix-AI
    ```
 
 2. **Install dependencies**
@@ -240,7 +240,6 @@ See `.env.example` for all available configuration options.
 
 ### Deploy to Render
 
-See [RENDER_DEPLOYMENT.md](./RENDER_DEPLOYMENT.md) for detailed deployment instructions.
 
 **Quick Deploy:**
 1. Push code to GitHub
@@ -283,7 +282,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🐛 Bug Reports & Feature Requests
 
-Please use the [GitHub Issues](https://github.com/yourusername/datalix-ai/issues) page to report bugs or request features.
+Please use the [GitHub Issues](https://github.com/HimanshuSingh-966/DataLix-AI/issues) page to report bugs or request features.
 
 ## 📚 Documentation
 
