@@ -72,7 +72,7 @@ export class SupabaseStorage implements IStorage {
       WHERE user_id = ${userId}
       ORDER BY updated_at DESC
     `;
-    return result as Session[];
+    return Array.from(result) as Session[];
   }
 
   async deleteSession(id: string): Promise<void> {
@@ -99,10 +99,10 @@ export class SupabaseStorage implements IStorage {
         ${insertMessage.sessionId}, 
         ${insertMessage.role}, 
         ${insertMessage.content},
-        ${insertMessage.chartData ?? null},
-        ${insertMessage.dataPreview ?? null},
-        ${insertMessage.suggestedActions ?? null},
-        ${insertMessage.functionCalls ?? null},
+        ${insertMessage.chartData ? this.sql.json(insertMessage.chartData) : null},
+        ${insertMessage.dataPreview ? this.sql.json(insertMessage.dataPreview) : null},
+        ${insertMessage.suggestedActions ? this.sql.json(insertMessage.suggestedActions) : null},
+        ${insertMessage.functionCalls ? this.sql.json(insertMessage.functionCalls) : null},
         ${insertMessage.error ?? null}
       )
       RETURNING *
@@ -123,7 +123,7 @@ export class SupabaseStorage implements IStorage {
       WHERE session_id = ${sessionId}
       ORDER BY created_at ASC
     `;
-    return result as Message[];
+    return Array.from(result) as Message[];
   }
 
   async getUserMessageCountToday(userId: string): Promise<number> {
