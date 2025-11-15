@@ -62,7 +62,7 @@ export function MessageBubble({ message, onRegenerate, onEdit, onDelete }: Messa
           {isUser ? (
             <p className="text-sm whitespace-pre-wrap" data-testid="text-message-user">{message.content}</p>
           ) : (
-            <div className="prose prose-sm dark:prose-invert max-w-none" data-testid="text-message-assistant">
+            <div className="prose prose-sm dark:prose-invert max-w-none text-card-foreground" data-testid="text-message-assistant">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {message.content}
               </ReactMarkdown>
