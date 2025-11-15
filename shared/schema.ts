@@ -1,11 +1,11 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, jsonb, decimal } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, jsonb, decimal, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Profiles table (linked to Supabase auth.users)
 export const profiles = pgTable("profiles", {
-  id: varchar("id").primaryKey(),
+  id: uuid("id").primaryKey(),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   isMaster: integer("is_master").notNull().default(0),
@@ -27,8 +27,8 @@ export type InsertUser = InsertProfile;
 
 // Sessions table
 export const sessions = pgTable("sessions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => profiles.id),
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => profiles.id),
   name: text("name"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -45,8 +45,8 @@ export type Session = typeof sessions.$inferSelect;
 
 // Messages table
 export const messages = pgTable("messages", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  sessionId: varchar("session_id").notNull().references(() => sessions.id),
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: uuid("session_id").notNull().references(() => sessions.id),
   role: text("role").notNull(), // 'user' | 'assistant'
   content: text("content").notNull(),
   chartData: jsonb("chart_data"), // Plotly chart JSON
