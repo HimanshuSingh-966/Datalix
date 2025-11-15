@@ -14,6 +14,16 @@ export default function AuthCallback() {
     const handleCallback = async () => {
       try {
         const supabase = getSupabase();
+        
+        if (!supabase) {
+          toast({
+            description: 'Supabase not configured. Please use email/password authentication.',
+            variant: 'destructive',
+          });
+          setLocation('/auth');
+          return;
+        }
+        
         const { data, error } = await supabase.auth.getSession();
 
         if (error) {
