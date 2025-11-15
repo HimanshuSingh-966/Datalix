@@ -654,6 +654,7 @@ For questions, answer directly with specific data.
                             df_filtered = df
                         
                         self.data_processor.update_dataframe(session_id, df_filtered)
+                        data_preview = self.data_processor._create_preview(df_filtered, max_rows=100)
                         results.append({
                             "message": f"✓ Kept {len(df_filtered)} rows where {col} {op} {val} (removed {len(df) - len(df_filtered)} rows)"
                         })
