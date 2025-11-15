@@ -214,41 +214,7 @@ export default function ChatPage() {
   };
 
   const handleNewSession = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        toast({ 
-          description: 'Please login to create a new session', 
-          variant: 'destructive' 
-        });
-        setLocation('/auth');
-        return;
-      }
-
-      const response = await apiRequest('POST', '/api/sessions', {});
-      const data = await response.json();
-      
-      clearSession();
-      useChatStore.setState({ sessionId: data.id });
-      queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
-      toast({ description: 'New session created' });
-    } catch (error) {
-      const isUnauthorized = error instanceof ApiError && 
-        (error.status === 401 || error.status === 403);
-      
-      const errorMessage = isUnauthorized
-        ? 'Please login to create a session'
-        : 'Failed to create session';
-      
-      toast({ 
-        description: errorMessage, 
-        variant: 'destructive' 
-      });
-      
-      if (isUnauthorized) {
-        setLocation('/auth');
-      }
-    }
+    toast({ description: 'Coming soon!' });
   };
 
   const handleSessionSelect = async (sessionId: string) => {
