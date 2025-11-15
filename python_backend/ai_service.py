@@ -427,6 +427,7 @@ CRITICAL INSTRUCTIONS - YOU ARE AN ACTION-ORIENTED ASSISTANT:
                                         continue
                                     
                                     self.data_processor.update_dataframe(session_id, df_filtered)
+                                    data_preview = self.data_processor._create_preview(df_filtered, max_rows=100)
                                     results.append({
                                         "message": f"✓ Kept {len(df_filtered)} rows where {col} {op} {val} (removed {len(df) - len(df_filtered)} rows)",
                                         "filtered_rows": len(df_filtered),
