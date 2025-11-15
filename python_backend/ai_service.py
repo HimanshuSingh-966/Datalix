@@ -115,6 +115,42 @@ class AIService:
                             type=glm.Type.OBJECT,
                             properties={}
                         )
+                    ),
+                    glm.FunctionDeclaration(
+                        name="remove_columns",
+                        description="Remove/delete one or more columns from the dataset permanently",
+                        parameters=glm.Schema(
+                            type=glm.Type.OBJECT,
+                            properties={
+                                "columns": glm.Schema(
+                                    type=glm.Type.STRING,
+                                    description="Comma-separated column names to remove"
+                                )
+                            },
+                            required=["columns"]
+                        )
+                    ),
+                    glm.FunctionDeclaration(
+                        name="filter_rows",
+                        description="Filter/keep only rows that match a condition, removing all others",
+                        parameters=glm.Schema(
+                            type=glm.Type.OBJECT,
+                            properties={
+                                "column": glm.Schema(
+                                    type=glm.Type.STRING,
+                                    description="Column name to filter on"
+                                ),
+                                "operator": glm.Schema(
+                                    type=glm.Type.STRING,
+                                    description="Operator: >, <, ==, !=, >=, <=, contains"
+                                ),
+                                "value": glm.Schema(
+                                    type=glm.Type.STRING,
+                                    description="Value to compare against"
+                                )
+                            },
+                            required=["column", "operator", "value"]
+                        )
                     )
                 ]
             )
@@ -201,9 +237,9 @@ class AIService:
                 stats_preview.append(f"{col}: min={df[col].min():.2f}, max={df[col].max():.2f}, mean={df[col].mean():.2f}")
             
             dataset_context = f"""
-You are analyzing a dataset with the following ACTUAL data:
+You are a data analysis assistant. The user has a dataset loaded and you can perform operations on it.
 
-DATASET OVERVIEW:
+CURRENT DATASET:
 - Total rows: {len(df)}
 - Total columns: {len(df.columns)}
 - File size: {df.memory_usage(deep=True).sum() / 1024 / 1024:.2f} MB
@@ -220,13 +256,19 @@ NUMERIC COLUMNS PREVIEW:
 DATA PREVIEW (first 3 rows):
 {df.head(3).to_string()}
 
-USER QUESTION: {message}
+USER REQUEST: {message}
 
-INSTRUCTIONS:
-1. Answer the user's question DIRECTLY using the actual data shown above
-2. Provide specific numbers, column names, and percentages from the real data
-3. Call functions only if you need to create visualizations or perform operations
-4. DO NOT give generic suggestions - use the ACTUAL data to answer
+CRITICAL INSTRUCTIONS - YOU ARE AN ACTION-ORIENTED ASSISTANT:
+1. ALWAYS PERFORM THE ACTION - never just give instructions or suggestions
+2. When user says "remove/delete column X" → CALL remove_columns immediately
+3. When user says "filter/keep/show rows where..." → CALL filter_rows immediately  
+4. When user says "remove duplicates" → CALL clean_data with action='remove_duplicates'
+5. When user says "handle/fill/drop missing values" → CALL clean_data with action='handle_missing'
+6. When user says "remove outliers" → CALL clean_data with action='remove_outliers'
+7. When user says "create/show visualization" → CALL create_visualization
+8. For questions about data → Answer directly using the actual data shown
+9. After ANY operation → Confirm what you did and show the results
+10. NEVER say "you can do X" or "try doing Y" - JUST DO IT
 """
         except:
             dataset_context = f"User message: {message}\n\nNote: No dataset loaded yet. If they're asking about data operations, suggest uploading a dataset first."
@@ -254,9 +296,11 @@ INSTRUCTIONS:
                         # Execute the function
                         try:
                             if function_name == "get_statistics":
+                                cols = function_args.get('columns')
+                                columns_list = [c.strip() for c in str(cols).split(',')] if cols else None
                                 result = self.data_processor.calculate_statistics(
                                     session_id,
-                                    function_args.get('columns')
+                                    columns_list
                                 )
                                 results.append(result)
                             
@@ -265,9 +309,11 @@ INSTRUCTIONS:
                                 results.append(result)
                             
                             elif function_name == "get_correlation":
+                                cols = function_args.get('columns')
+                                columns_list = [c.strip() for c in str(cols).split(',')] if cols else None
                                 result = self.data_processor.calculate_correlation(
                                     session_id,
-                                    function_args.get('columns')
+                                    columns_list
                                 )
                                 results.append(result)
                                 
@@ -281,10 +327,10 @@ INSTRUCTIONS:
                             elif function_name == "create_visualization":
                                 chart_data = self.data_processor.create_visualization(
                                     session_id,
-                                    chart_type=function_args['chart_type'],
-                                    x_column=function_args.get('x_column'),
-                                    y_column=function_args.get('y_column'),
-                                    parameters=function_args
+                                    chart_type=str(function_args['chart_type']),
+                                    x_column=str(function_args.get('x_column')) if function_args.get('x_column') else None,
+                                    y_column=str(function_args.get('y_column')) if function_args.get('y_column') else None,
+                                    parameters=dict(function_args)
                                 )
                                 results.append({"visualization": "created"})
                             
@@ -306,11 +352,97 @@ INSTRUCTIONS:
                                 except Exception as e:
                                     results.append({"error": "No dataset loaded"})
                             
+                            elif function_name == "remove_columns":
+                                # Remove specified columns from the dataset
+                                df = self.data_processor.get_dataframe(session_id)
+                                columns_to_remove = [col.strip() for col in str(function_args['columns']).split(',')]
+                                
+                                # Validate columns exist
+                                existing_cols = [col for col in columns_to_remove if col in df.columns]
+                                invalid_cols = [col for col in columns_to_remove if col not in df.columns]
+                                
+                                if not existing_cols:
+                                    results.append({
+                                        "error": f"Column(s) not found in dataset: {', '.join(invalid_cols)}. Available columns: {', '.join(df.columns.tolist())}"
+                                    })
+                                else:
+                                    df_updated = df.drop(columns=existing_cols)
+                                    self.data_processor.update_dataframe(session_id, df_updated)
+                                    
+                                    result_msg = f"✓ Removed {len(existing_cols)} column(s): {', '.join(existing_cols)}"
+                                    if invalid_cols:
+                                        result_msg += f". Note: These columns were not found: {', '.join(invalid_cols)}"
+                                    
+                                    results.append({
+                                        "message": result_msg,
+                                        "removed_columns": existing_cols,
+                                        "remaining_columns": len(df_updated.columns),
+                                        "remaining_rows": len(df_updated)
+                                    })
+                            
+                            elif function_name == "filter_rows":
+                                # Filter rows based on condition
+                                df = self.data_processor.get_dataframe(session_id)
+                                col = str(function_args['column'])
+                                op = str(function_args['operator'])
+                                val = str(function_args['value'])
+                                
+                                # Validate column exists
+                                if col not in df.columns:
+                                    results.append({
+                                        "error": f"Column '{col}' not found in dataset. Available columns: {', '.join(df.columns.tolist())}"
+                                    })
+                                    continue
+                                
+                                # Try to convert value to appropriate type
+                                try:
+                                    if df[col].dtype in ['int64', 'float64']:
+                                        val = float(val)
+                                except ValueError:
+                                    results.append({
+                                        "error": f"Cannot convert '{val}' to number for column '{col}'"
+                                    })
+                                    continue
+                                
+                                import pandas as pd
+                                try:
+                                    if op == '>':
+                                        df_filtered = pd.DataFrame(df[df[col] > val])
+                                    elif op == '<':
+                                        df_filtered = pd.DataFrame(df[df[col] < val])
+                                    elif op == '==':
+                                        df_filtered = pd.DataFrame(df[df[col] == val])
+                                    elif op == '!=':
+                                        df_filtered = pd.DataFrame(df[df[col] != val])
+                                    elif op == '>=':
+                                        df_filtered = pd.DataFrame(df[df[col] >= val])
+                                    elif op == '<=':
+                                        df_filtered = pd.DataFrame(df[df[col] <= val])
+                                    elif op == 'contains':
+                                        df_filtered = pd.DataFrame(df[df[col].astype(str).str.contains(str(val), case=False)])
+                                    else:
+                                        results.append({
+                                            "error": f"Unsupported operator '{op}'. Use: >, <, ==, !=, >=, <=, contains"
+                                        })
+                                        continue
+                                    
+                                    self.data_processor.update_dataframe(session_id, df_filtered)
+                                    results.append({
+                                        "message": f"✓ Kept {len(df_filtered)} rows where {col} {op} {val} (removed {len(df) - len(df_filtered)} rows)",
+                                        "filtered_rows": len(df_filtered),
+                                        "original_rows": len(df),
+                                        "removed_rows": len(df) - len(df_filtered)
+                                    })
+                                except Exception as e:
+                                    results.append({
+                                        "error": f"Filter operation failed: {str(e)}"
+                                    })
+                            
                             elif function_name == "ml_analysis":
                                 result = self.data_processor.ml_analysis(
                                     session_id,
-                                    analysis_type=function_args['analysis_type'],
-                                    parameters=function_args
+                                    analysis_type=str(function_args['analysis_type']),
+                                    parameters=dict(function_args)
                                 )
                                 results.append(result)
                                 if result.get('visualization'):
@@ -323,22 +455,23 @@ INSTRUCTIONS:
                                 op = function_args['operator']
                                 val = function_args['value']
                                 
+                                import pandas as pd
                                 if op == '>':
-                                    df_filtered = df[df[col] > val]
+                                    df_filtered = pd.DataFrame(df[df[col] > val])
                                 elif op == '<':
-                                    df_filtered = df[df[col] < val]
+                                    df_filtered = pd.DataFrame(df[df[col] < val])
                                 elif op == '==':
-                                    df_filtered = df[df[col] == val]
+                                    df_filtered = pd.DataFrame(df[df[col] == val])
                                 elif op == '!=':
-                                    df_filtered = df[df[col] != val]
+                                    df_filtered = pd.DataFrame(df[df[col] != val])
                                 elif op == '>=':
-                                    df_filtered = df[df[col] >= val]
+                                    df_filtered = pd.DataFrame(df[df[col] >= val])
                                 elif op == '<=':
-                                    df_filtered = df[df[col] <= val]
+                                    df_filtered = pd.DataFrame(df[df[col] <= val])
                                 elif op == 'contains':
-                                    df_filtered = df[df[col].astype(str).str.contains(str(val), case=False)]
+                                    df_filtered = pd.DataFrame(df[df[col].astype(str).str.contains(str(val), case=False)])
                                 else:
-                                    df_filtered = df
+                                    df_filtered = pd.DataFrame(df)
                                 
                                 self.data_processor.update_dataframe(session_id, df_filtered)
                                 results.append({
@@ -414,9 +547,7 @@ INSTRUCTIONS:
                 stats_preview.append(f"{col}: min={df[col].min():.2f}, max={df[col].max():.2f}, mean={df[col].mean():.2f}")
             
             dataset_context = f"""
-You are analyzing a dataset with the following ACTUAL data:
-
-DATASET OVERVIEW:
+CURRENT DATASET:
 - Total rows: {len(df)}
 - Total columns: {len(df.columns)}
 
@@ -432,12 +563,15 @@ NUMERIC COLUMNS PREVIEW:
 DATA PREVIEW (first 3 rows):
 {df.head(3).to_string()}
 
-USER QUESTION: {message}
+USER REQUEST: {message}
 
-INSTRUCTIONS:
-1. Answer the user's question DIRECTLY using the actual data shown above
-2. Provide specific numbers, column names, and percentages from the real data
-3. DO NOT give generic suggestions - use the ACTUAL data to answer
+INSTRUCTIONS - BE ACTION-ORIENTED:
+When user asks to perform an action (remove columns, filter data, clean data, create chart), use keywords in your response so I can execute it:
+- For removing columns: include "REMOVE_COLUMNS: column1, column2"
+- For filtering: include "FILTER_ROWS: column operator value"
+- For cleaning: include "CLEAN_DATA: action"
+- For visualization: include "CREATE_CHART: type"
+For questions, answer directly with specific data.
 """
         except:
             dataset_context = f"User message: {message}\n\nNote: No dataset loaded. Suggest uploading a dataset first."
@@ -461,6 +595,90 @@ INSTRUCTIONS:
             results = []
             chart_data = None
             data_preview = None
+            
+            # Parse ACTION KEYWORDS from AI response
+            import re
+            import pandas as pd
+            
+            # Check for REMOVE_COLUMNS: column1, column2
+            remove_match = re.search(r'REMOVE_COLUMNS:\s*(.+?)(?:\n|$)', ai_message, re.IGNORECASE)
+            if remove_match:
+                try:
+                    df = self.data_processor.get_dataframe(session_id)
+                    columns_to_remove = [col.strip() for col in remove_match.group(1).split(',')]
+                    existing_cols = [col for col in columns_to_remove if col in df.columns]
+                    invalid_cols = [col for col in columns_to_remove if col not in df.columns]
+                    
+                    if existing_cols:
+                        df_updated = df.drop(columns=existing_cols)
+                        self.data_processor.update_dataframe(session_id, df_updated)
+                        result_msg = f"✓ Removed {len(existing_cols)} column(s): {', '.join(existing_cols)}"
+                        if invalid_cols:
+                            result_msg += f". Note: These columns were not found: {', '.join(invalid_cols)}"
+                        results.append({"message": result_msg})
+                        function_calls_made.append('remove_columns')
+                    else:
+                        results.append({"error": f"Column(s) not found: {', '.join(invalid_cols)}"})
+                except Exception as e:
+                    results.append({"error": f"Remove columns failed: {str(e)}"})
+            
+            # Check for FILTER_ROWS: column operator value
+            filter_match = re.search(r'FILTER_ROWS:\s*(\S+)\s+(\S+)\s+(.+?)(?:\n|$)', ai_message, re.IGNORECASE)
+            if filter_match:
+                try:
+                    df = self.data_processor.get_dataframe(session_id)
+                    col = filter_match.group(1).strip()
+                    op = filter_match.group(2).strip()
+                    val = filter_match.group(3).strip()
+                    
+                    if col in df.columns:
+                        if df[col].dtype in ['int64', 'float64']:
+                            val = float(val)
+                        
+                        if op == '>':
+                            df_filtered = pd.DataFrame(df[df[col] > val])
+                        elif op == '<':
+                            df_filtered = pd.DataFrame(df[df[col] < val])
+                        elif op == '==':
+                            df_filtered = pd.DataFrame(df[df[col] == val])
+                        elif op == '!=':
+                            df_filtered = pd.DataFrame(df[df[col] != val])
+                        elif op == '>=':
+                            df_filtered = pd.DataFrame(df[df[col] >= val])
+                        elif op == '<=':
+                            df_filtered = pd.DataFrame(df[df[col] <= val])
+                        elif op == 'contains':
+                            df_filtered = pd.DataFrame(df[df[col].astype(str).str.contains(str(val), case=False)])
+                        else:
+                            df_filtered = df
+                        
+                        self.data_processor.update_dataframe(session_id, df_filtered)
+                        results.append({
+                            "message": f"✓ Kept {len(df_filtered)} rows where {col} {op} {val} (removed {len(df) - len(df_filtered)} rows)"
+                        })
+                        function_calls_made.append('filter_rows')
+                    else:
+                        results.append({"error": f"Column '{col}' not found"})
+                except Exception as e:
+                    results.append({"error": f"Filter failed: {str(e)}"})
+            
+            # Check for CLEAN_DATA: action
+            clean_match = re.search(r'CLEAN_DATA:\s*(.+?)(?:\n|$)', ai_message, re.IGNORECASE)
+            if clean_match:
+                try:
+                    action = clean_match.group(1).strip().lower()
+                    if 'duplicate' in action:
+                        result = self.data_processor.clean_data(session_id, parameters={"action": "remove_duplicates"})
+                    elif 'missing' in action or 'null' in action:
+                        result = self.data_processor.clean_data(session_id, parameters={"action": "handle_missing", "method": "mean"})
+                    elif 'outlier' in action:
+                        result = self.data_processor.clean_data(session_id, parameters={"action": "remove_outliers", "method": "iqr"})
+                    else:
+                        result = self.data_processor.clean_data(session_id, parameters={"action": action})
+                    results.append(result)
+                    function_calls_made.append('clean_data')
+                except Exception as e:
+                    results.append({"error": f"Clean data failed: {str(e)}"})
             
             # Detect if AI suggests statistics
             if any(keyword in ai_message.lower() for keyword in ['statistics', 'summary', 'mean', 'median', 'std']):
