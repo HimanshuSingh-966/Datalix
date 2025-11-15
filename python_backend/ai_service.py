@@ -221,6 +221,9 @@ class AIService:
         # Get dataset info for context
         try:
             df = self.data_processor.get_dataframe(session_id)
+            session = self.data_processor.sessions.get(session_id, {})
+            original_rows = session.get("original_rows", len(df))
+            original_cols = session.get("original_columns", len(df.columns))
             
             # Get missing value info
             missing_info = []
@@ -236,12 +239,26 @@ class AIService:
             for col in numeric_cols[:5]:
                 stats_preview.append(f"{col}: min={df[col].min():.2f}, max={df[col].max():.2f}, mean={df[col].mean():.2f}")
             
+            # Prepare dimension info
+            if original_rows != len(df) or original_cols != len(df.columns):
+                dimension_info = f"""
+CURRENT DATASET (after filtering/modifications):
+- Current rows: {len(df)}
+- Current columns: {len(df.columns)}
+
+ORIGINAL DATASET (before any modifications):
+- Original rows: {original_rows}
+- Original columns: {original_cols}"""
+            else:
+                dimension_info = f"""
+CURRENT DATASET:
+- Total rows: {len(df)}
+- Total columns: {len(df.columns)}"""
+            
             dataset_context = f"""
 You are a data analysis assistant. The user has a dataset loaded and you can perform operations on it.
 
-CURRENT DATASET:
-- Total rows: {len(df)}
-- Total columns: {len(df.columns)}
+{dimension_info}
 - File size: {df.memory_usage(deep=True).sum() / 1024 / 1024:.2f} MB
 
 COLUMNS ({len(df.columns)} total):
@@ -532,6 +549,9 @@ CRITICAL INSTRUCTIONS - YOU ARE AN ACTION-ORIENTED ASSISTANT:
         # Get dataset info for context
         try:
             df = self.data_processor.get_dataframe(session_id)
+            session = self.data_processor.sessions.get(session_id, {})
+            original_rows = session.get("original_rows", len(df))
+            original_cols = session.get("original_columns", len(df.columns))
             
             # Get missing value info
             missing_info = []
@@ -547,10 +567,24 @@ CRITICAL INSTRUCTIONS - YOU ARE AN ACTION-ORIENTED ASSISTANT:
             for col in numeric_cols[:5]:
                 stats_preview.append(f"{col}: min={df[col].min():.2f}, max={df[col].max():.2f}, mean={df[col].mean():.2f}")
             
-            dataset_context = f"""
+            # Prepare dimension info
+            if original_rows != len(df) or original_cols != len(df.columns):
+                dimension_info = f"""
+CURRENT DATASET (after filtering/modifications):
+- Current rows: {len(df)}
+- Current columns: {len(df.columns)}
+
+ORIGINAL DATASET (before any modifications):
+- Original rows: {original_rows}
+- Original columns: {original_cols}"""
+            else:
+                dimension_info = f"""
 CURRENT DATASET:
 - Total rows: {len(df)}
-- Total columns: {len(df.columns)}
+- Total columns: {len(df.columns)}"""
+            
+            dataset_context = f"""
+{dimension_info}
 
 COLUMNS ({len(df.columns)} total):
 {chr(10).join([f"- {col} ({df[col].dtype}): {df[col].nunique()} unique values" for col in df.columns])}

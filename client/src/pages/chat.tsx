@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { queryClient, apiRequest } from '@/lib/queryClient';
+import { useLocation } from 'wouter';
+import { queryClient, apiRequest, ApiError } from '@/lib/queryClient';
 import { Header } from '@/components/Header';
 import { SessionSidebar } from '@/components/SessionSidebar';
 import { MessageBubble } from '@/components/MessageBubble';
@@ -39,6 +40,7 @@ export default function ChatPage() {
     clearSession,
   } = useChatStore();
 
+  const [, setLocation] = useLocation();
   const [input, setInput] = useState('');
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [showExampleDialog, setShowExampleDialog] = useState(false);
@@ -213,6 +215,16 @@ export default function ChatPage() {
 
   const handleNewSession = async () => {
     try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        toast({ 
+          description: 'Please login to create a new session', 
+          variant: 'destructive' 
+        });
+        setLocation('/auth');
+        return;
+      }
+
       const response = await apiRequest('POST', '/api/sessions', {});
       const data = await response.json();
       
@@ -221,10 +233,21 @@ export default function ChatPage() {
       queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
       toast({ description: 'New session created' });
     } catch (error) {
+      const isUnauthorized = error instanceof ApiError && 
+        (error.status === 401 || error.status === 403);
+      
+      const errorMessage = isUnauthorized
+        ? 'Please login to create a session'
+        : 'Failed to create session';
+      
       toast({ 
-        description: 'Failed to create session', 
+        description: errorMessage, 
         variant: 'destructive' 
       });
+      
+      if (isUnauthorized) {
+        setLocation('/auth');
+      }
     }
   };
 

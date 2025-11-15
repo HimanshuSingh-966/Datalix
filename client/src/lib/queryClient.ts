@@ -2,6 +2,13 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+export class ApiError extends Error {
+  constructor(public status: number, public body: string) {
+    super(`${status}: ${body}`);
+    this.name = 'ApiError';
+  }
+}
+
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem("access_token");
   const headers: HeadersInit = {};
@@ -16,7 +23,7 @@ function getAuthHeaders(): HeadersInit {
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    throw new ApiError(res.status, text);
   }
 }
 

@@ -48,10 +48,7 @@ class DataProcessor:
         # Analyze data quality
         quality_analysis = analyze_data_quality(df)
         
-        # Create preview
-        preview = self._create_preview(df, filename)
-        
-        # Store session
+        # Store session with original dimensions first
         self.sessions[session_id] = {
             "session_id": session_id,
             "user_id": user_id,
@@ -59,8 +56,14 @@ class DataProcessor:
             "filename": filename,
             "created_at": datetime.now(),
             "quality": quality_analysis,
-            "preview": preview
+            "preview": {},
+            "original_rows": len(df),
+            "original_columns": len(df.columns)
         }
+        
+        # Create preview with session_id to get original dimensions
+        preview = self._create_preview(df, filename, session_id=session_id)
+        self.sessions[session_id]["preview"] = preview
         
         # Prepare response
         result = {
@@ -78,7 +81,7 @@ class DataProcessor:
         
         return session_id, result
     
-    def _create_preview(self, df: pd.DataFrame, filename: str = None, max_rows: int = 100) -> Dict:
+    def _create_preview(self, df: pd.DataFrame, filename: str = None, max_rows: int = 100, session_id: str = None) -> Dict:
         """Create a data preview"""
         preview_df = df.head(max_rows)
         
@@ -99,11 +102,21 @@ class DataProcessor:
         # Convert DataFrame to records, handling NaN values
         rows = preview_df.replace({np.nan: None}).to_dict('records')
         
+        # Get original dimensions if session exists
+        original_rows = len(df)
+        original_columns = len(df.columns)
+        
+        if session_id and session_id in self.sessions:
+            original_rows = self.sessions[session_id].get("original_rows", len(df))
+            original_columns = self.sessions[session_id].get("original_columns", len(df.columns))
+        
         return {
             "columns": columns_info,
             "rows": rows,
             "totalRows": len(df),
             "totalColumns": len(df.columns),
+            "originalRows": original_rows,
+            "originalColumns": original_columns,
             "fileName": filename
         }
     
@@ -118,8 +131,17 @@ class DataProcessor:
         if session_id not in self.sessions:
             raise ValueError("Session not found")
         
+        # Preserve original dimensions if not set
+        if "original_rows" not in self.sessions[session_id]:
+            self.sessions[session_id]["original_rows"] = len(df)
+            self.sessions[session_id]["original_columns"] = len(df.columns)
+        
         self.sessions[session_id]["dataframe"] = df
-        self.sessions[session_id]["preview"] = self._create_preview(df, self.sessions[session_id].get("filename"))
+        self.sessions[session_id]["preview"] = self._create_preview(
+            df, 
+            self.sessions[session_id].get("filename"),
+            session_id=session_id
+        )
         
         # Recalculate quality
         quality = analyze_data_quality(df)
