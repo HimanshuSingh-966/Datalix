@@ -130,3 +130,14 @@ service-account.json
 user_data/
 sessions/
 datasets/
+
+DataLix_AI/attached_assets/
+
+DataLix_AI/design_guidelines.md
+
+DataLix_AI/DOCUMENTATION.md
+DataLix_AI/init_database_with_rls.sql
+DataLix_AI/init_database.sql
+DataLix_AI/RENDER_DEPLOYMENT.md
+DataLix_AI/uv.lock
+DataLix_AI/.local
